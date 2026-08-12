@@ -1,0 +1,5215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AHS Agentrix · 时空本体 4D 数字孪生 · 跨行业认知操作系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --paper:#0a1119;
+  --paper-2:#0e1827;
+  --paper-3:#142235;
+  --ink:#eef4fb;
+  --ink-soft:#b4c4da;
+  --ink-mute:#7689a3;
+  --line:#22364f;
+  --line-soft:rgba(120,160,210,.16);
+  --accent:#22d3ee;     /* cyan · sense */
+  --accent-2:#3b82f6;   /* blue · diagnose */
+  --accent-3:#34d399;   /* emerald · plan */
+  --accent-4:#fbbf24;   /* amber · execute */
+  --accent-5:#a78bfa;   /* violet · audit */
+  --warn:#f43f5e;
+  --ok:#34d399;
+  --info:#22d3ee;
+  --grid:rgba(120,170,230,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Inter','Noto Sans SC',system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(34,211,238,.07), transparent 50%),
+    radial-gradient(circle at 85% 90%, rgba(59,130,246,.06), transparent 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  overflow:hidden;
+  font-size:14px;
+}
+
+/* =========== TOP BAR =========== */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:54px;
+  display:flex;align-items:center;gap:14px;
+  padding:0 18px;
+  background:linear-gradient(to bottom, rgba(243,238,228,.96), rgba(243,238,228,.88));
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line-soft);
+  z-index:50;
+}
+.dots{display:flex;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%;border:1.2px solid var(--line)}
+.brand{
+  display:flex;align-items:baseline;gap:8px;
+  padding-right:14px;border-right:1px solid var(--line-soft);
+}
+.brand-name{
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:18px;font-weight:800;
+  letter-spacing:.4px;color:#7c3aed;
+  text-shadow:0 0 10px rgba(124,58,237,.55),0 0 22px rgba(109,40,217,.3);
+}
+.brand-name em{font-style:normal;font-weight:800;color:#6d28d9;
+  text-shadow:0 0 12px rgba(124,58,237,.7)}
+.brand-sub{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--ink-mute);letter-spacing:.5px;
+}
+.crumb-bar{
+  flex:1;display:flex;align-items:center;gap:10px;
+  padding:7px 16px;border:1.2px solid var(--line);
+  border-radius:999px;background:var(--paper);
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:13.5px;
+  max-width:680px;
+}
+.crumb{color:var(--ink-mute);transition:color .3s}
+.crumb.active{color:var(--ink);font-weight:600}
+.sep{color:var(--ink-mute);opacity:.5}
+
+.phase-bar{
+  display:flex;gap:0;align-items:center;
+  background:var(--paper);
+  border:1.2px solid var(--line);border-radius:999px;
+  padding:3px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+}
+.phase-bar button{
+  border:none;background:transparent;cursor:pointer;
+  padding:6px 13px;border-radius:999px;color:var(--ink-mute);
+  letter-spacing:.5px;transition:all .25s;
+}
+.phase-bar button.on{background:var(--ink);color:var(--paper)}
+
+.health-pill{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 11px;
+  background:var(--paper);border:1.2px solid var(--line);
+  border-radius:999px;font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;
+}
+.health-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 0 0 rgba(21,128,61,.5);
+  animation:healthPulse 1.8s infinite;
+}
+@keyframes healthPulse{
+  0%{box-shadow:0 0 0 0 rgba(21,128,61,.45)}
+  70%{box-shadow:0 0 0 6px rgba(21,128,61,0)}
+  100%{box-shadow:0 0 0 0 rgba(21,128,61,0)}
+}
+
+/* =========== STAGE GRID =========== */
+.stage{
+  position:fixed;top:54px;left:0;right:0;bottom:0;
+  display:grid;
+  grid-template-columns:280px 1fr 360px;
+  grid-template-rows:1fr 220px 36px;
+  grid-template-areas:
+    "side  canvas  detail"
+    "side  pipeline detail"
+    "footer footer footer";
+  gap:0;
+}
+
+/* =========== LEFT SIDEBAR =========== */
+.sidebar{
+  grid-area:side;
+  border-right:1.2px solid var(--line-soft);
+  background:var(--paper);
+  padding:18px 18px;
+  overflow-y:auto;
+  display:flex;flex-direction:column;gap:18px;
+}
+.side-section-h{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:1.2px;color:var(--ink-mute);
+  text-transform:uppercase;margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+}
+.side-section-h::before{
+  content:"";width:14px;height:1px;background:var(--ink-mute);
+}
+
+/* industry list */
+.industry-list{display:flex;flex-direction:column;gap:5px}
+.industry{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:9px;
+  cursor:pointer;transition:all .22s;
+  border:1px solid transparent;
+  position:relative;
+}
+.industry:hover{background:rgba(42,37,32,.05)}
+.industry.active{
+  background:var(--ink);color:var(--paper);
+  border-color:var(--line);
+}
+.industry.active .ind-sub{color:rgba(243,238,228,.65)}
+.ind-icon{
+  width:30px;height:30px;flex-shrink:0;
+  border-radius:7px;background:var(--paper-2);
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-soft);
+  font-size:14px;
+}
+.industry.active .ind-icon{background:rgba(243,238,228,.12);border-color:transparent}
+.ind-label{font-size:13px;font-weight:500;line-height:1.2}
+.ind-sub{font-size:10px;color:var(--ink-mute);margin-top:2px;font-family:'JetBrains Mono',monospace}
+
+/* 5-layer architecture stack */
+.arch-stack{
+  display:flex;flex-direction:column;gap:3px;
+}
+.arch-layer{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;
+  background:var(--paper-2);
+  border-radius:7px;border-left:3px solid var(--line);
+  font-size:11px;
+  position:relative;
+  transition:all .3s;
+}
+.arch-layer.l1{border-left-color:var(--accent)}
+.arch-layer.l2{border-left-color:var(--accent-2)}
+.arch-layer.l3{border-left-color:var(--accent-3)}
+.arch-layer.l4{border-left-color:var(--accent-4)}
+.arch-layer.l5{border-left-color:var(--accent-5)}
+.arch-layer.firing{
+  background:#fff7ee;
+  transform:translateX(2px);
+  box-shadow:0 2px 10px rgba(194,65,12,.15);
+}
+.arch-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;color:var(--ink-mute);
+  width:18px;flex-shrink:0;
+}
+.arch-name{flex:1;font-weight:500;color:var(--ink-soft);font-size:11.5px}
+.arch-name b{font-weight:600;color:var(--ink)}
+.arch-metric{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;color:var(--ink-mute);
+  letter-spacing:.3px;
+}
+.arch-metric em{color:var(--accent);font-style:normal;font-weight:600}
+
+/* standards mini list */
+.std-list{
+  display:flex;flex-wrap:wrap;gap:4px;
+}
+.std-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:.4px;
+  padding:3px 7px;
+  border:1px solid var(--line-soft);
+  border-radius:4px;
+  color:var(--ink-soft);
+  background:var(--paper-2);
+}
+.std-tag.active{
+  background:var(--ink);color:var(--paper);border-color:var(--ink);
+}
+
+/* =========== CANVAS =========== */
+.canvas-wrap{
+  grid-area:canvas;
+  position:relative;
+  background:
+    linear-gradient(to bottom right, rgba(194,65,12,.025), rgba(30,96,145,.025)),
+    var(--paper);
+  overflow:hidden;
+}
+.canvas-wrap::before{
+  content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(ellipse at center, black 35%, transparent 80%);
+  pointer-events:none;
+}
+#three-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* scene-overlay (top-left of canvas) */
+.scene-overlay{
+  position:absolute;top:18px;left:22px;z-index:5;pointer-events:none;
+  max-width:380px;
+}
+.scene-tag{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  padding:3px 10px;border:1px solid var(--line);
+  border-radius:999px;letter-spacing:1px;
+  color:var(--ink-soft);background:rgba(243,238,228,.7);
+  backdrop-filter:blur(6px);
+  margin-bottom:8px;
+}
+.scene-title{
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:30px;font-weight:300;
+  line-height:1.05;color:var(--ink);
+}
+.scene-title em{font-style:italic;color:var(--accent)}
+.scene-sub{
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-style:italic;
+  font-size:12.5px;color:var(--ink-soft);
+  margin-top:6px;max-width:360px;line-height:1.5;
+}
+
+/* KPI ribbon - floating right */
+.kpi-ribbon{
+  position:absolute;top:18px;right:18px;z-index:4;
+  display:flex;flex-direction:column;gap:8px;width:264px;
+}
+.kpi-box{
+  background:linear-gradient(135deg,rgba(20,34,53,.92),rgba(10,17,25,.92));
+  border:1px solid rgba(120,160,210,.28);
+  border-radius:10px;padding:10px 14px;
+  font-family:'JetBrains Mono',monospace;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(6px);
+}
+.kpi-k{font-size:10px;color:#dbe6f5;font-weight:600;letter-spacing:.6px;text-transform:uppercase}
+.kpi-v{font-size:19px;font-weight:800;color:#ffffff;display:flex;align-items:baseline;gap:6px;margin-left:auto;
+  text-shadow:0 0 14px rgba(255,255,255,.4)}
+.kpi-v .delta{font-size:11px;font-weight:700}
+.kpi-v .delta.up{color:#5eead4;text-shadow:0 0 10px rgba(52,211,153,.6)}
+.kpi-v .delta.down{color:#fb7185;text-shadow:0 0 10px rgba(244,63,94,.6)}
+
+/* time scrubber - bottom-right of canvas */
+.time-scrub{
+  position:absolute;bottom:14px;right:18px;z-index:5;
+  background:var(--paper);border:1.2px solid var(--line);
+  border-radius:10px;padding:9px 13px;
+  width:240px;
+}
+.time-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:6px;
+}
+.time-label{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:1px;color:var(--ink-mute);text-transform:uppercase;
+}
+.time-val{font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:12px;font-style:italic;color:var(--accent)}
+.time-bar{
+  position:relative;height:18px;
+  background:repeating-linear-gradient(90deg,
+    var(--line) 0, var(--line) 1px,
+    transparent 1px, transparent 9px);
+  border-bottom:1px solid var(--line);
+}
+.time-cursor{
+  position:absolute;top:-2px;width:2px;height:22px;background:var(--accent);
+  transition:left .4s cubic-bezier(.5,0,.2,1);
+}
+.time-cursor::before{
+  content:"";position:absolute;top:-3px;left:-3px;
+  width:8px;height:8px;background:var(--accent);border-radius:50%;
+}
+.time-ticks{
+  display:flex;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--ink-mute);margin-top:3px;
+}
+
+/* twin/physical toggle */
+.world-toggle{
+  position:absolute;bottom:16px;left:22px;z-index:5;
+  display:flex;gap:2px;background:var(--paper);
+  border:1.2px solid var(--line);border-radius:999px;padding:2px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+}
+.world-toggle button{
+  border:none;background:transparent;cursor:pointer;
+  padding:5px 12px;border-radius:999px;color:var(--ink-mute);
+  letter-spacing:.5px;transition:all .25s;
+}
+.world-toggle button.on{background:var(--ink);color:var(--paper)}
+
+/* anomaly pulse keyframe */
+@keyframes anomPing{
+  0%,100%{opacity:0;transform:scale(.5)}
+  50%{opacity:1;transform:scale(1)}
+}
+
+/* =========== AGENT PIPELINE (bottom of canvas, full width) =========== */
+.pipeline{
+  grid-area:pipeline;
+  background:var(--paper);
+  border-top:1.2px solid var(--line-soft);
+  padding:14px 22px 12px;
+  display:flex;flex-direction:column;gap:10px;
+  position:relative;
+}
+.pipe-head{
+  display:flex;align-items:center;gap:14px;
+}
+.pipe-title{
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:15px;font-weight:600;
+}
+.pipe-title em{font-style:italic;color:var(--accent);font-weight:400}
+.pipe-sub{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  color:var(--ink-mute);letter-spacing:.5px;
+  flex:1;
+}
+.pipe-iter{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  padding:3px 9px;border:1px solid var(--line);border-radius:999px;
+  color:var(--ink-soft);
+}
+.pipe-iter em{font-style:normal;color:var(--accent);font-weight:600}
+
+.pipe-flow{
+  display:grid;grid-template-columns:repeat(5, 1fr) 200px;
+  gap:8px;align-items:stretch;
+}
+.agent-card{
+  background:var(--paper-2);
+  border:1px solid var(--line-soft);
+  border-radius:9px;
+  padding:9px 11px;
+  position:relative;
+  display:flex;flex-direction:column;gap:5px;
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+  min-height:108px;
+}
+.agent-card.active{
+  background:var(--paper);
+  border-color:var(--line);
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px rgba(26,22,18,.12);
+}
+.agent-card.completed{
+  border-color:var(--ok);
+  background:#f0f6ee;
+}
+.agent-card::after{
+  content:"→";
+  position:absolute;
+  right:-12px;top:50%;
+  transform:translateY(-50%);
+  font-family:'JetBrains Mono',monospace;
+  color:var(--ink-mute);
+  font-size:14px;
+  z-index:2;
+}
+.agent-card:nth-child(5)::after,
+.agent-card:nth-child(6)::after{content:""}
+
+.agent-head{
+  display:flex;align-items:center;gap:7px;
+}
+.agent-icon{
+  width:22px;height:22px;flex-shrink:0;
+  border-radius:5px;border:1.2px solid var(--line);
+  background:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:12px;font-weight:600;
+}
+.agent-card.active .agent-icon{
+  background:var(--ink);color:var(--paper);border-color:var(--ink);
+  animation:agentPulse 1.6s infinite;
+}
+.agent-card.completed .agent-icon{
+  background:var(--ok);color:var(--paper);border-color:var(--ok);
+}
+@keyframes agentPulse{
+  0%{box-shadow:0 0 0 0 rgba(194,65,12,.5)}
+  70%{box-shadow:0 0 0 7px rgba(194,65,12,0)}
+  100%{box-shadow:0 0 0 0 rgba(194,65,12,0)}
+}
+.agent-name{
+  font-size:11.5px;font-weight:600;line-height:1.1;
+}
+.agent-en{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;color:var(--ink-mute);
+  letter-spacing:.6px;
+}
+.agent-task{
+  font-size:10.5px;color:var(--ink-soft);line-height:1.4;
+  flex:1;
+  font-family:'Noto Sans SC',sans-serif;
+}
+.agent-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--ink-mute);letter-spacing:.3px;
+  border-top:1px dashed var(--line-soft);
+  padding-top:5px;
+}
+.agent-meta .lat{color:var(--accent)}
+
+/* Decision Gate (last column) */
+.decision-gate{
+  background:linear-gradient(135deg, var(--ink) 0%, #2d2722 100%);
+  color:var(--paper);
+  border-radius:9px;
+  padding:9px 11px;
+  display:flex;flex-direction:column;gap:5px;
+  position:relative;
+  min-height:108px;
+}
+.gate-head{
+  display:flex;align-items:center;gap:6px;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:11.5px;font-weight:600;
+}
+.gate-head .gate-ring{
+  width:8px;height:8px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 6px rgba(194,65,12,.8);
+}
+.gate-conf{
+  display:flex;align-items:baseline;gap:4px;
+  font-family:'JetBrains Mono',monospace;
+}
+.gate-conf .v{font-size:18px;font-weight:600;color:var(--paper)}
+.gate-conf .l{font-size:8.5px;color:rgba(243,238,228,.6);letter-spacing:.4px}
+.gate-bar{
+  position:relative;height:5px;background:rgba(243,238,228,.15);
+  border-radius:2px;overflow:hidden;
+}
+.gate-fill{
+  position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:linear-gradient(to right, var(--accent), #f87171);
+  transition:width .8s cubic-bezier(.4,0,.2,1);
+}
+.gate-thr{
+  position:absolute;top:-3px;height:11px;width:1px;
+  background:rgba(243,238,228,.6);
+}
+.gate-thr::after{
+  content:"θ";position:absolute;top:-12px;left:-3px;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-style:italic;font-size:9px;
+  color:rgba(243,238,228,.7);
+}
+.gate-verdict{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:.4px;color:rgba(243,238,228,.7);
+  display:flex;justify-content:space-between;
+  border-top:1px dashed rgba(243,238,228,.15);
+  padding-top:5px;
+}
+.gate-verdict .pass{color:#86efac}
+.gate-verdict .escalate{color:#fcd34d}
+
+/* SHACL/quality strip below pipeline */
+.qa-strip{
+  display:flex;align-items:center;gap:14px;
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  color:var(--ink-mute);
+}
+.qa-item{display:flex;align-items:center;gap:5px}
+.qa-dot{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.qa-dot.warn{background:var(--warn)}
+.qa-dot.info{background:var(--info)}
+.qa-item b{font-family:'JetBrains Mono',monospace;color:var(--ink);font-weight:600}
+
+/* =========== RIGHT DETAIL PANEL =========== */
+.detail{
+  grid-area:detail;
+  border-left:1.2px solid var(--line-soft);
+  background:var(--paper);
+  padding:16px 18px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:14px;
+}
+.tabs{
+  display:flex;gap:0;
+  border-bottom:1px solid var(--line-soft);
+  margin-bottom:-2px;
+}
+.tab{
+  padding:7px 11px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--ink-mute);
+  border-bottom:2px solid transparent;
+  transition:all .2s;
+  letter-spacing:.5px;
+}
+.tab:hover{color:var(--ink-soft)}
+.tab.active{
+  color:var(--ink);font-weight:600;
+  border-bottom-color:var(--accent);
+}
+
+.tab-panel{display:none;flex-direction:column;gap:14px}
+.tab-panel.active{display:flex}
+
+/* 5-tuple table (object/state/event/constraint/action) */
+.tuple-grid{
+  display:grid;grid-template-columns:1fr;gap:7px;
+  font-size:11px;
+}
+.tuple-row{
+  display:grid;grid-template-columns:60px 1fr;gap:8px;
+  padding:8px 10px;
+  background:var(--paper-2);border-radius:7px;
+  border-left:2px solid var(--accent);
+}
+.tuple-row.r1{border-left-color:var(--accent)}
+.tuple-row.r2{border-left-color:var(--accent-2)}
+.tuple-row.r3{border-left-color:var(--accent-3)}
+.tuple-row.r4{border-left-color:var(--accent-4)}
+.tuple-row.r5{border-left-color:var(--accent-5)}
+.tuple-k{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  color:var(--ink-mute);text-transform:uppercase;letter-spacing:.6px;
+  padding-top:1px;
+}
+.tuple-v{font-size:11.5px;line-height:1.45;color:var(--ink)}
+.tuple-v code{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:var(--paper);padding:1px 5px;border-radius:3px;
+  color:var(--accent);
+}
+
+/* PROV lineage chain */
+.prov-chain{
+  position:relative;display:flex;flex-direction:column;gap:6px;
+  padding-left:14px;
+}
+.prov-chain::before{
+  content:"";position:absolute;left:5px;top:6px;bottom:6px;
+  width:1.5px;background:var(--line-soft);
+}
+.prov-node{
+  position:relative;display:flex;flex-direction:column;gap:2px;
+  padding:6px 9px 6px 16px;
+  background:var(--paper-2);border-radius:6px;font-size:11px;
+}
+.prov-node::before{
+  content:"";position:absolute;left:-12px;top:11px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--accent);
+  z-index:1;
+}
+.prov-node[data-kind="obs"]::before{border-color:var(--accent)}
+.prov-node[data-kind="rule"]::before{border-color:var(--accent-2)}
+.prov-node[data-kind="agent"]::before{border-color:var(--accent-3)}
+.prov-node[data-kind="decision"]::before{border-color:var(--accent-4);background:var(--accent-4)}
+.prov-node[data-kind="action"]::before{border-color:var(--ok);background:var(--ok)}
+.prov-h{
+  display:flex;align-items:baseline;justify-content:space-between;
+  font-size:10px;
+}
+.prov-kind{
+  font-family:'JetBrains Mono',monospace;font-size:8.5px;
+  letter-spacing:.6px;color:var(--ink-mute);
+  text-transform:uppercase;
+}
+.prov-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-mute)}
+.prov-body{font-size:11px;color:var(--ink);line-height:1.4}
+.prov-body code{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  background:var(--paper);padding:0 4px;border-radius:3px;color:var(--accent);
+}
+
+/* ontology snippet (Turtle code) */
+.code-block{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:#1a1612;color:#e8d9c0;
+  border-radius:7px;padding:11px 13px;
+  line-height:1.55;
+  overflow-x:auto;
+  border:1px solid var(--line);
+}
+.code-block .c-prefix{color:#7dd3fc}
+.code-block .c-class{color:#fbbf24}
+.code-block .c-prop{color:#fda4af}
+.code-block .c-com{color:#9a8b7a;font-style:italic}
+.code-block .c-str{color:#a7f3d0}
+
+/* SHACL gate */
+.shacl-card{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;
+  background:var(--paper-2);border-radius:7px;
+  border-left:3px solid var(--ok);
+  font-size:11px;
+}
+.shacl-card.fail{
+  border-left-color:var(--warn);background:#fef2f2;
+}
+.shacl-icon{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--ok);color:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-weight:600;font-size:13px;
+}
+.shacl-card.fail .shacl-icon{background:var(--warn)}
+
+/* action panel */
+.actions-list{display:flex;flex-direction:column;gap:5px}
+.action-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 11px;background:var(--paper-2);border-radius:7px;
+  font-size:11px;
+  transition:all .25s;
+}
+.action-row.firing{
+  background:#fff7ee;border-left:2px solid var(--accent);
+  animation:firingPulse .9s ease;
+}
+@keyframes firingPulse{
+  0%{transform:translateX(0)}
+  30%{transform:translateX(-3px);box-shadow:0 0 0 4px rgba(194,65,12,.15)}
+  100%{transform:translateX(0);box-shadow:0 0 0 0 rgba(194,65,12,0)}
+}
+.act-name{font-family:'Noto Sans SC',sans-serif;font-size:11.5px;font-weight:500;line-height:1.3}
+.act-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-mute);margin-top:2px}
+.act-status{
+  display:flex;align-items:center;gap:4px;
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  flex-shrink:0;
+}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.status-dot.running{background:var(--accent);animation:blink 1.2s infinite}
+.status-dot.done{background:var(--ok)}
+.status-dot.pending{background:var(--ink-mute);opacity:.5}
+.status-dot.idem{background:var(--info)}
+@keyframes blink{50%{opacity:.3}}
+
+.execute-btn{
+  margin-top:6px;padding:11px;
+  background:var(--ink);color:var(--paper);
+  border:none;border-radius:8px;cursor:pointer;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:13px;font-weight:500;
+  letter-spacing:.3px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .25s;
+}
+.execute-btn:hover{background:var(--accent)}
+.execute-btn .arrow{transition:transform .25s}
+.execute-btn:hover .arrow{transform:translateX(3px)}
+
+/* writeback systems display */
+.writeback-row{
+  display:flex;flex-wrap:wrap;gap:5px;
+  padding-top:8px;
+}
+.wb-tag{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  padding:3px 8px;border:1px solid var(--line-soft);border-radius:4px;
+  color:var(--ink-soft);background:var(--paper-2);
+  display:flex;align-items:center;gap:4px;
+}
+.wb-tag .wb-dot{width:5px;height:5px;border-radius:50%;background:var(--ink-mute)}
+.wb-tag.lit{
+  background:var(--ink);color:var(--paper);border-color:var(--ink);
+}
+.wb-tag.lit .wb-dot{background:var(--ok)}
+
+/* mini ontology graph */
+.mini-graph{
+  position:relative;height:120px;width:100%;
+  background:var(--paper-2);border-radius:8px;
+  border:1px solid var(--line-soft);overflow:hidden;
+}
+.mini-graph svg{width:100%;height:100%}
+
+/* =========== FOOTER status bar =========== */
+.footer-bar{
+  grid-area:footer;
+  display:flex;align-items:center;gap:18px;
+  padding:0 18px;
+  background:var(--paper-2);
+  border-top:1px solid var(--line-soft);
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--ink-mute);
+  letter-spacing:.4px;
+}
+.footer-item{display:flex;align-items:center;gap:6px}
+.footer-item b{color:var(--ink);font-weight:600}
+.footer-item.right{margin-left:auto}
+
+/* sprite labels in 3D need no special CSS, they're canvas */
+
+/* command beam (overlay for animations) */
+.cmd-beam{
+  position:fixed;pointer-events:none;z-index:25;
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 10px rgba(194,65,12,.8);
+  transition:left 1.1s cubic-bezier(.4,0,.4,1), top 1.1s cubic-bezier(.4,0,.4,1), opacity .3s;
+}
+
+/* event-burst beam (Observer→3D) */
+.event-burst{
+  position:fixed;pointer-events:none;z-index:25;
+  width:6px;height:6px;border-radius:50%;background:var(--accent-2);
+  box-shadow:0 0 8px rgba(30,96,145,.7);
+  transition:left .9s cubic-bezier(.5,0,.3,1), top .9s cubic-bezier(.5,0,.3,1), opacity .25s;
+}
+
+/* anomaly toast */
+.toast{
+  position:absolute;top:80px;left:50%;transform:translateX(-50%);
+  z-index:30;
+  padding:9px 16px;
+  background:var(--ink);color:var(--paper);border-radius:999px;
+  font-family:'Noto Sans SC',sans-serif;font-size:12px;
+  display:flex;align-items:center;gap:10px;
+  opacity:0;transition:opacity .35s, transform .35s;
+  pointer-events:none;
+  max-width:80%;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(4px)}
+.toast .t-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  animation:blink 1.2s infinite;
+}
+
+/* scroll */
+.sidebar::-webkit-scrollbar,.detail::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb,.detail::-webkit-scrollbar-thumb{background:rgba(42,37,32,.2);border-radius:2px}
+
+@media (max-width:1280px){
+  .stage{grid-template-columns:240px 1fr 320px}
+  .scene-title{font-size:24px}
+  .agent-card{padding:7px 9px;min-height:100px}
+}
+
+/* ===========================================================
+   导入向导 (R2RML / 语义对齐 / 实例挂载 三步)
+   =========================================================== */
+.import-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 13px;
+  background:var(--accent);color:var(--paper);
+  border:1.2px solid var(--accent);border-radius:999px;
+  font-family:'Noto Sans SC',sans-serif;font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 2px 8px rgba(194,65,12,.25);
+}
+.import-btn:hover{
+  background:var(--ink);border-color:var(--ink);
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(26,22,18,.3);
+}
+.import-btn .xls-icon{
+  width:18px;height:18px;
+  background:var(--paper);color:var(--accent);
+  border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:11px;font-weight:700;
+}
+
+.wizard-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(26,22,18,.55);
+  backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s;
+}
+.wizard-overlay.on{opacity:1;pointer-events:auto}
+
+.wizard{
+  width:min(1180px, 92vw);
+  height:min(720px, 90vh);
+  background:var(--paper);
+  border:1.2px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 24px 60px rgba(26,22,18,.35);
+  display:grid;
+  grid-template-rows:auto auto 1fr auto;
+  overflow:hidden;
+  transform:scale(.96);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.wizard-overlay.on .wizard{transform:scale(1)}
+
+.wiz-head{
+  padding:18px 26px 12px;
+  border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:center;gap:18px;
+}
+.wiz-title{
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:21px;font-weight:600;
+  display:flex;align-items:baseline;gap:8px;
+}
+.wiz-title em{font-style:italic;color:var(--accent);font-weight:400}
+.wiz-sub{
+  flex:1;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-style:italic;font-size:12px;
+  color:var(--ink-mute);line-height:1.4;
+}
+.wiz-close{
+  width:30px;height:30px;
+  border:1.2px solid var(--line);border-radius:50%;
+  background:var(--paper);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:16px;color:var(--ink);
+  transition:all .2s;
+}
+.wiz-close:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* step indicator */
+.wiz-steps{
+  display:flex;align-items:center;gap:0;
+  padding:14px 26px;
+  border-bottom:1px solid var(--line-soft);
+  background:var(--paper-2);
+}
+.wiz-step{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 12px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.4px;
+  color:var(--ink-mute);
+  transition:all .3s;
+}
+.wiz-step .ws-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink-mute);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-weight:600;font-size:11px;
+  transition:all .3s;
+}
+.wiz-step .ws-name{font-weight:500}
+.wiz-step .ws-name b{font-weight:600;color:var(--ink-soft)}
+.wiz-step.active .ws-num{
+  background:var(--ink);color:var(--paper);border-color:var(--ink);
+  box-shadow:0 0 0 0 rgba(194,65,12,.4);
+  animation:wsPulse 1.4s infinite;
+}
+.wiz-step.active .ws-name b{color:var(--accent)}
+.wiz-step.completed .ws-num{
+  background:var(--ok);color:var(--paper);border-color:var(--ok);
+}
+.wiz-step.completed .ws-name b{color:var(--ok)}
+@keyframes wsPulse{
+  0%{box-shadow:0 0 0 0 rgba(194,65,12,.45)}
+  70%{box-shadow:0 0 0 8px rgba(194,65,12,0)}
+  100%{box-shadow:0 0 0 0 rgba(194,65,12,0)}
+}
+.wiz-step-arrow{flex:1;height:1px;background:var(--line-soft);margin:0 6px;position:relative}
+.wiz-step-arrow .ws-fill{
+  position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:var(--accent);transition:width .8s ease;
+}
+
+/* main wizard body */
+.wiz-body{
+  position:relative;
+  overflow:hidden;
+  background:var(--paper);
+}
+.wiz-pane{
+  position:absolute;inset:0;
+  padding:22px 26px;
+  overflow-y:auto;
+  opacity:0;transform:translateX(20px);
+  transition:opacity .35s, transform .35s;
+  pointer-events:none;
+}
+.wiz-pane.active{opacity:1;transform:translateX(0);pointer-events:auto}
+
+/* ----- Step 0: file pick ----- */
+.file-card{
+  display:flex;align-items:center;gap:18px;
+  padding:18px 22px;
+  border:2px dashed var(--line-soft);
+  border-radius:12px;
+  background:var(--paper-2);
+  cursor:pointer;
+  transition:all .25s;
+  margin-bottom:18px;
+}
+.file-card:hover{border-color:var(--accent);background:#fff7ee}
+.file-card.selected{
+  border-style:solid;border-color:var(--accent);background:#fff7ee;
+}
+.file-icon{
+  width:54px;height:64px;flex-shrink:0;
+  background:linear-gradient(135deg, #1d6f42 0%, #166534 100%);
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-weight:700;font-size:14px;
+  position:relative;
+  box-shadow:0 4px 10px rgba(22,101,52,.25);
+}
+.file-icon::after{
+  content:"";position:absolute;top:0;right:0;
+  border-width:0 12px 12px 0;border-style:solid;
+  border-color:transparent var(--paper) var(--paper) transparent;
+}
+.file-name{
+  font-family:'Noto Sans SC',sans-serif;font-size:14px;font-weight:600;
+  color:var(--ink);
+}
+.file-meta{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--ink-mute);margin-top:3px;letter-spacing:.3px;
+}
+
+.sheet-tabs{
+  display:flex;gap:8px;margin-bottom:12px;
+}
+.sheet-tab{
+  padding:7px 14px;border:1.2px solid var(--line-soft);
+  border-radius:8px;background:var(--paper-2);cursor:pointer;
+  font-family:'Noto Sans SC',sans-serif;font-size:12px;font-weight:500;
+  display:flex;align-items:center;gap:6px;
+  transition:all .2s;
+}
+.sheet-tab:hover{border-color:var(--ink-soft)}
+.sheet-tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.sheet-tab .st-icon{font-size:14px}
+
+.preview-table{
+  width:100%;
+  border-collapse:collapse;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  border:1px solid var(--line-soft);border-radius:8px;overflow:hidden;
+}
+.preview-table th{
+  background:var(--paper-2);
+  padding:7px 10px;text-align:left;
+  font-weight:600;color:var(--ink);
+  border-bottom:1.2px solid var(--line-soft);
+  font-family:'Noto Sans SC',sans-serif;font-size:11px;
+}
+.preview-table td{
+  padding:6px 10px;
+  border-bottom:1px solid var(--line-soft);
+  color:var(--ink-soft);
+}
+.preview-table tr:last-child td{border-bottom:none}
+.preview-table tr:hover{background:#fafaf3}
+
+/* ----- Step 1: R2RML mapping ----- */
+.r2rml-canvas{
+  position:relative;
+  display:grid;grid-template-columns:1fr 60px 1fr;
+  gap:0;
+  height:calc(100% - 0px);
+  align-items:start;
+}
+.r2rml-side{
+  display:flex;flex-direction:column;gap:6px;
+}
+.r2rml-side-h{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.7px;color:var(--ink-mute);text-transform:uppercase;
+  margin-bottom:5px;display:flex;align-items:center;gap:6px;
+}
+.r2rml-side-h::before{content:"";width:14px;height:1px;background:var(--ink-mute)}
+
+.r2rml-col{
+  padding:7px 11px;
+  background:var(--paper-2);border-radius:7px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  display:flex;align-items:center;gap:8px;
+  border-left:2px solid var(--line-soft);
+  position:relative;
+  transition:all .3s;
+}
+.r2rml-col.mapped{
+  background:#fff7ee;border-left-color:var(--accent);
+  transform:translateX(2px);
+}
+.r2rml-col .col-letter{
+  font-size:9px;color:var(--ink-mute);
+  width:14px;flex-shrink:0;
+}
+.r2rml-col .col-name{flex:1;font-weight:500;color:var(--ink)}
+.r2rml-col .col-arrow{
+  font-size:11px;color:var(--accent);
+  opacity:0;transition:opacity .3s;
+}
+.r2rml-col.mapped .col-arrow{opacity:1}
+
+.r2rml-onto{
+  padding:7px 11px;
+  background:var(--paper-2);border-radius:7px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  border-left:2px solid var(--accent-2);
+  display:flex;align-items:center;gap:8px;
+  position:relative;
+  transition:all .3s;
+  opacity:.4;
+}
+.r2rml-onto.lit{
+  opacity:1;background:#eff6fc;
+  transform:translateX(-2px);
+}
+.r2rml-onto .onto-prefix{color:var(--accent-2);font-weight:600}
+.r2rml-onto .onto-tag{
+  font-family:'Noto Sans SC',sans-serif;font-size:9px;
+  padding:1px 6px;border-radius:3px;background:var(--ink);color:var(--paper);
+  letter-spacing:.5px;
+}
+
+.r2rml-mid{
+  position:relative;
+  height:100%;
+}
+.r2rml-mid svg{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;
+}
+
+/* ----- Step 2: semantic alignment ----- */
+.align-canvas{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:18px;height:100%;
+  align-items:start;
+}
+.align-col{
+  display:flex;flex-direction:column;gap:8px;
+}
+.align-col-h{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.7px;color:var(--ink-mute);text-transform:uppercase;
+  margin-bottom:6px;
+}
+.align-col-h em{font-style:normal;color:var(--accent)}
+.align-card{
+  padding:9px 12px;
+  background:var(--paper-2);border-radius:7px;
+  border-left:2px solid var(--line-soft);
+  font-size:11.5px;line-height:1.4;
+  position:relative;
+  transition:all .35s;
+}
+.align-card .ac-k{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--ink-mute);letter-spacing:.4px;text-transform:uppercase;
+}
+.align-card .ac-v{
+  font-family:'Noto Sans SC',sans-serif;font-size:12px;font-weight:500;
+  color:var(--ink);margin-top:2px;
+}
+.align-card .ac-v code{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  background:var(--paper);padding:1px 5px;border-radius:3px;color:var(--accent);
+}
+.align-card.t-attr{border-left-color:var(--accent)}
+.align-card.t-concept{border-left-color:var(--accent-2)}
+.align-card.t-rule{border-left-color:var(--accent-3)}
+.align-card.lit{
+  background:#fff7ee;
+  box-shadow:0 4px 12px rgba(194,65,12,.18);
+  transform:translateX(-2px);
+}
+.align-card.t-concept.lit{background:#eff6fc}
+.align-card.t-rule.lit{background:#f3f7ed}
+
+/* ----- Step 3: instance attachment ----- */
+.attach-canvas{
+  position:relative;
+  display:grid;grid-template-columns:1fr 1.4fr;
+  gap:20px;height:100%;
+}
+.instance-stream{
+  display:flex;flex-direction:column;gap:5px;
+  overflow-y:auto;
+  padding-right:6px;
+}
+.inst-row{
+  padding:7px 11px;
+  background:var(--paper-2);border-radius:6px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  display:flex;align-items:center;gap:8px;
+  opacity:.55;
+  transition:all .3s;
+}
+.inst-row.attached{
+  background:#f3f7ed;opacity:1;border-left:2px solid var(--ok);
+}
+.inst-row .inst-id{color:var(--accent-2);font-weight:600}
+.inst-row .inst-arrow{color:var(--ink-mute)}
+.inst-row .inst-class{color:var(--accent);font-weight:600}
+.inst-row .inst-status{margin-left:auto;color:var(--ok);font-size:10px}
+
+.graph-panel{
+  position:relative;
+  background:var(--paper-2);
+  border-radius:10px;
+  border:1px solid var(--line-soft);
+  overflow:hidden;
+}
+.graph-panel svg{width:100%;height:100%}
+
+/* ----- footer commentary ----- */
+.wiz-foot{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 26px;
+  border-top:1px solid var(--line-soft);
+  background:var(--paper-2);
+}
+.wiz-quote{
+  flex:1;
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-style:italic;font-size:13px;
+  color:var(--ink-soft);line-height:1.5;
+  padding-left:14px;border-left:2.5px solid var(--accent);
+  transition:opacity .3s;
+}
+.wiz-quote b{font-weight:600;color:var(--accent);font-style:normal}
+.wiz-actions{display:flex;gap:8px}
+.wiz-btn{
+  padding:8px 18px;
+  background:var(--paper);color:var(--ink);
+  border:1.2px solid var(--line);border-radius:7px;
+  font-family:'Noto Sans SC',sans-serif;font-size:12px;font-weight:500;
+  cursor:pointer;transition:all .2s;
+}
+.wiz-btn:hover{background:var(--paper-2)}
+.wiz-btn.primary{
+  background:var(--ink);color:var(--paper);border-color:var(--ink);
+}
+.wiz-btn.primary:hover{background:var(--accent);border-color:var(--accent)}
+.wiz-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* JK sub-scenes (for JK industry) */
+.jk-subscene{
+  display:flex;flex-direction:column;gap:5px;
+  padding:8px 10px;
+  background:var(--paper-2);border-radius:7px;
+  border-left:2px solid var(--accent);
+  font-size:10.5px;
+}
+.jk-subscene-h{
+  display:flex;align-items:center;gap:6px;
+  font-weight:600;color:var(--ink);
+}
+.jk-subscene-h .jks-icon{font-size:13px}
+.jk-subscene-meta{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--ink-mute);letter-spacing:.3px;
+}
+
+/* attachment burst (DOM particles) */
+.attach-burst{
+  position:fixed;pointer-events:none;z-index:250;
+  width:5px;height:5px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px rgba(194,65,12,.7);
+  transition:left 1s cubic-bezier(.4,0,.2,1), top 1s cubic-bezier(.4,0,.2,1), opacity .25s;
+}
+
+/* ============== Template library bar (Step 0) ============== */
+.tpl-bar{
+  margin-bottom:14px;
+  padding:14px 16px;
+  background:linear-gradient(to bottom, #fafaf3, var(--paper-2));
+  border:1px solid var(--line-soft);
+  border-radius:10px;
+}
+.tpl-bar-h{
+  display:flex;align-items:baseline;gap:10px;margin-bottom:10px;
+}
+.tpl-bar-h-l{
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-size:14px;font-weight:600;
+  color:var(--ink);
+}
+.tpl-bar-h-r{
+  font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-style:italic;font-size:11.5px;
+  color:var(--ink-mute);
+}
+.tpl-bar-h-r em{font-style:italic;color:var(--accent);font-weight:500}
+.tpl-grid{
+  display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:8px;
+}
+.tpl-card{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 11px;
+  background:var(--paper);
+  border:1.2px solid var(--line-soft);
+  border-radius:8px;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+}
+.tpl-card:hover{
+  border-color:var(--ink-soft);
+  transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(26,22,18,.08);
+}
+.tpl-card.active{
+  border-color:var(--accent);background:#fff7ee;
+  box-shadow:0 3px 12px rgba(194,65,12,.18);
+}
+.tpl-card.upload{
+  border:1.5px dashed var(--accent);
+  background:transparent;
+}
+.tpl-card.upload:hover{
+  background:#fff7ee;
+}
+.tpl-icon{
+  width:36px;height:42px;flex-shrink:0;
+  border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-family:'Space Grotesk','Noto Sans SC',sans-serif;font-weight:700;font-size:11px;
+  position:relative;
+}
+.tpl-icon::after{
+  content:"";position:absolute;top:0;right:0;
+  border-width:0 8px 8px 0;border-style:solid;
+  border-color:transparent var(--paper) var(--paper) transparent;
+}
+.tpl-info{flex:1;min-width:0;overflow:hidden}
+.tpl-name{
+  font-family:'Noto Sans SC',sans-serif;font-size:11.5px;font-weight:600;
+  color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tpl-meta{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--ink-mute);margin-top:2px;letter-spacing:.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tpl-tag{
+  flex-shrink:0;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  padding:2px 7px;border:1px solid var(--line-soft);border-radius:3px;
+  color:var(--ink-mute);letter-spacing:.4px;
+}
+
+/* parse status pill */
+.parse-status{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--ok);font-weight:500;
+  padding:3px 9px;background:#f0f6ee;border-radius:999px;
+  border:1px solid rgba(21,128,61,.3);
+}
+.parse-status.parsing{
+  color:var(--accent);background:#fff7ee;
+  border-color:rgba(194,65,12,.3);
+}
+.parse-status.error{
+  color:var(--warn);background:#fef2f2;
+  border-color:rgba(185,28,28,.3);
+}
+
+/* onto summary box */
+.onto-summary{
+  margin-top:12px;
+  padding:10px 14px;
+  background:var(--paper-2);
+  border-radius:8px;
+  font-size:11px;line-height:1.5;color:var(--ink-soft);
+}
+.onto-summary-h{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:.6px;color:var(--ink-mute);
+  text-transform:uppercase;
+}
+.onto-summary-body{
+  margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+}
+
+/* parse progress overlay (during real file parse) */
+.parse-overlay{
+  position:absolute;inset:0;
+  background:rgba(243,238,228,.92);
+  backdrop-filter:blur(4px);
+  display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;
+  z-index:5;
+}
+.parse-overlay.on{display:flex}
+.parse-spinner{
+  width:42px;height:42px;
+  border:3px solid var(--line-soft);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:parseSpin 0.8s linear infinite;
+}
+@keyframes parseSpin{to{transform:rotate(360deg)}}
+.parse-text{
+  font-family:'Noto Sans SC',sans-serif;font-size:13px;
+  color:var(--ink-soft);font-weight:500;
+}
+.parse-text em{font-style:italic;color:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- ========== TOP BAR ========== -->
+<div class="topbar">
+  <div class="dots">
+    <span class="dot" style="background:#e06c5e"></span>
+    <span class="dot" style="background:#e6b93b"></span>
+    <span class="dot" style="background:#7ea96a"></span>
+  </div>
+  <div class="brand">
+    <div class="brand-name">AHS Agentrix · <em>4D</em> 时空本体认知 OS</div>
+  </div>
+  <div class="crumb-bar">
+    <span class="crumb">跨行业 Agent OS · 认知操作系统</span>
+    <span class="sep">/</span>
+    <span class="crumb active" id="crumb-2">能源电力 · 故障自愈</span>
+    <span class="sep">/</span>
+    <span class="crumb" id="crumb-3" style="opacity:.55">多智能体深度推理</span>
+  </div>
+  <div class="phase-bar">
+    <button class="on" data-phase="poc">单域试点</button>
+    <button data-phase="pilot">多域协同</button>
+    <button data-phase="scale">全城复制</button>
+  </div>
+  <button class="import-btn" id="open-import">
+    <span class="xls-icon">X</span>
+    <span>导入业务数据</span>
+  </button>
+  <div class="health-pill">
+    <span class="health-dot"></span>
+    <span>闭环健康度 · <b id="health-v" style="color:var(--ok)">98.2%</b></span>
+  </div>
+</div>
+
+<!-- ========== STAGE ========== -->
+<div class="stage">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+
+    <div>
+      <div class="side-section-h">行业场景</div>
+      <div class="industry-list" id="industry-list"></div>
+    </div>
+
+    <div>
+      <div class="side-section-h">5 层架构 · 实时状态</div>
+      <div class="arch-stack" id="arch-stack">
+        <div class="arch-layer l1" data-layer="0">
+          <span class="arch-num">L1</span>
+          <span class="arch-name"><b>数据感知</b> · OT/IoT</span>
+          <span class="arch-metric"><em id="L1-rate">—</em> 事件/秒</span>
+        </div>
+        <div class="arch-layer l2" data-layer="1">
+          <span class="arch-num">L2</span>
+          <span class="arch-name"><b>语义中台</b> · 本体图谱</span>
+          <span class="arch-metric"><em id="L2-nodes">—</em> 节点</span>
+        </div>
+        <div class="arch-layer l3" data-layer="2">
+          <span class="arch-num">L3</span>
+          <span class="arch-name"><b>推理 · 多智能体</b></span>
+          <span class="arch-metric"><em id="L3-rules">—</em> 规则</span>
+        </div>
+        <div class="arch-layer l4" data-layer="3">
+          <span class="arch-num">L4</span>
+          <span class="arch-name"><b>3D 孪生 · 交互</b></span>
+          <span class="arch-metric"><em id="L4-fps">—</em> fps</span>
+        </div>
+        <div class="arch-layer l5" data-layer="4">
+          <span class="arch-num">L5</span>
+          <span class="arch-name"><b>执行闭环</b> · 回写</span>
+          <span class="arch-metric"><em id="L5-ack">—</em>% ACK</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="side-section-h">技术标准锚点</div>
+      <div class="std-list">
+        <span class="std-tag">OWL 2 RL</span>
+        <span class="std-tag">OWL-Time</span>
+        <span class="std-tag">PROV-O</span>
+        <span class="std-tag">SSN/SOSA</span>
+        <span class="std-tag">GeoSPARQL</span>
+        <span class="std-tag">SHACL</span>
+        <span class="std-tag">CIM/IEC 61968</span>
+        <span class="std-tag">WaterML</span>
+        <span class="std-tag">FLISR</span>
+        <span class="std-tag">SCADA/DTU</span>
+        <span class="std-tag">GIS/BIM</span>
+        <span class="std-tag">WBM 世界模型</span>
+        <span class="std-tag">MCP/A2A</span>
+        <span class="std-tag">Agentrix OS</span>
+        <span class="std-tag">Kafka</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CENTER CANVAS -->
+  <div class="canvas-wrap">
+    <canvas id="three-canvas"></canvas>
+
+    <div class="scene-overlay">
+      <span class="scene-tag" id="scene-tag">场景 · 01 / 05</span>
+      <div class="scene-title" id="scene-title">供水管网<br><em>爆管漏损孪生</em></div>
+      <div class="scene-sub" id="scene-sub">压力/流量/水质 多源融合 → Agent OS 推演爆管位置 · 秒级关阀隔离 · 最小影响停水。</div>
+    </div>
+
+    <div class="kpi-ribbon" id="kpi-ribbon"></div>
+
+    <div class="time-scrub">
+      <div class="time-head">
+        <span class="time-label">OWL-Time · 时间轴</span>
+        <span class="time-val" id="time-val">现在 + 00:00</span>
+      </div>
+      <div class="time-bar">
+        <div class="time-cursor" id="time-cursor" style="left:30%"></div>
+      </div>
+      <div class="time-ticks">
+        <span>-6时</span><span>-3时</span><span>此刻</span><span>+3时</span><span>+6时</span>
+      </div>
+    </div>
+
+    <div class="world-toggle">
+      <button id="btn-twin" class="on">虚拟孪生</button>
+      <button id="btn-phys">物理回响</button>
+    </div>
+
+    <div class="toast" id="toast">
+      <span class="t-dot"></span>
+      <span id="toast-text">观测到异常事件 · 进入推理流水线</span>
+    </div>
+  </div>
+
+  <!-- AGENT PIPELINE (5 roles + decision gate) -->
+  <div class="pipeline">
+    <div class="pipe-head">
+      <span class="pipe-title">Agent OS 多智能体群 · <em>时空本体深度推理</em></span>
+      <span class="pipe-sub">SHACL 校验 → 图谱归因 → 孪生推演 → 跨域规划 → 决策门 → 执行 + PROV 留痕</span>
+      <span class="pipe-iter">第 <em id="pipe-iter">1</em> 轮闭环</span>
+    </div>
+
+    <div class="pipe-flow">
+      <div class="agent-card" id="agent-0" data-phase="0">
+        <div class="agent-head">
+          <div class="agent-icon">①</div>
+          <div>
+            <div class="agent-name">观察者 Agent</div>
+            <div class="agent-en">OBSERVER</div>
+          </div>
+        </div>
+        <div class="agent-task" id="agent-0-task">消费事件流 · 识别状态偏离</div>
+        <div class="agent-meta">
+          <span>SSN/SOSA</span><span class="lat" id="agent-0-lat">—</span>
+        </div>
+      </div>
+
+      <div class="agent-card" id="agent-1" data-phase="1">
+        <div class="agent-head">
+          <div class="agent-icon">②</div>
+          <div>
+            <div class="agent-name">诊断者 Agent</div>
+            <div class="agent-en">DIAGNOSER</div>
+          </div>
+        </div>
+        <div class="agent-task" id="agent-1-task">沿图谱与谱系链回溯根因</div>
+        <div class="agent-meta">
+          <span>OWL RL · Graph</span><span class="lat" id="agent-1-lat">—</span>
+        </div>
+      </div>
+
+      <div class="agent-card" id="agent-2" data-phase="2">
+        <div class="agent-head">
+          <div class="agent-icon">③</div>
+          <div>
+            <div class="agent-name">规划者 Agent</div>
+            <div class="agent-en">PLANNER</div>
+          </div>
+        </div>
+        <div class="agent-task" id="agent-2-task">生成候选动作 · 约束/策略检查</div>
+        <div class="agent-meta">
+          <span>CSP · Policy</span><span class="lat" id="agent-2-lat">—</span>
+        </div>
+      </div>
+
+      <div class="agent-card" id="agent-3" data-phase="3">
+        <div class="agent-head">
+          <div class="agent-icon">④</div>
+          <div>
+            <div class="agent-name">执行者 Agent</div>
+            <div class="agent-en">EXECUTOR</div>
+          </div>
+        </div>
+        <div class="agent-task" id="agent-3-task">幂等回写外部业务系统</div>
+        <div class="agent-meta">
+          <span>API · 补偿</span><span class="lat" id="agent-3-lat">—</span>
+        </div>
+      </div>
+
+      <div class="agent-card" id="agent-4" data-phase="4">
+        <div class="agent-head">
+          <div class="agent-icon">⑤</div>
+          <div>
+            <div class="agent-name">审计者 Agent</div>
+            <div class="agent-en">AUDITOR</div>
+          </div>
+        </div>
+        <div class="agent-task" id="agent-4-task">PROV 谱系沉淀 · 效果回评</div>
+        <div class="agent-meta">
+          <span>PROV-O</span><span class="lat" id="agent-4-lat">—</span>
+        </div>
+      </div>
+
+      <div class="decision-gate">
+        <div class="gate-head"><span class="gate-ring"></span> 决策门 Gate</div>
+        <div class="gate-conf">
+          <span class="v" id="gate-v">—</span><span class="l">置信度</span>
+        </div>
+        <div class="gate-bar">
+          <div class="gate-fill" id="gate-fill"></div>
+          <div class="gate-thr" style="left:75%"></div>
+        </div>
+        <div class="gate-verdict">
+          <span class="pass" id="gate-pass">≥ θ 自动执行</span>
+          <span class="escalate" id="gate-esc">&lt; θ 升级人工</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-strip">
+      <div class="qa-item"><span class="qa-dot"></span>SHACL 校验 · <b id="qa-shacl">通过</b></div>
+      <div class="qa-item"><span class="qa-dot info"></span>事件时间一致性 · <b id="qa-time">水位线对齐</b></div>
+      <div class="qa-item"><span class="qa-dot"></span>幂等键 · <b>事件ID + 业务主键</b></div>
+      <div class="qa-item"><span class="qa-dot info"></span>主数据黄金来源 · <b id="qa-mdm">已锁定</b></div>
+      <div class="qa-item" style="margin-left:auto"><span class="qa-dot"></span>谱系完整 · <b>PROV 留痕</b></div>
+    </div>
+  </div>
+
+  <!-- RIGHT DETAIL -->
+  <aside class="detail">
+    <div class="tabs">
+      <div class="tab active" data-tab="case">异常剧本</div>
+      <div class="tab" data-tab="tuple">五元结构</div>
+      <div class="tab" data-tab="prov">证据谱系</div>
+      <div class="tab" data-tab="onto">本体片段</div>
+    </div>
+
+    <!-- TAB: case -->
+    <div class="tab-panel active" data-tab="case">
+
+      <div>
+        <div class="side-section-h">本体子图 · 受影响实体</div>
+        <div class="mini-graph"><svg id="mini-svg" viewBox="0 0 320 120"></svg></div>
+      </div>
+
+      <div>
+        <div class="side-section-h">SHACL · 数据契约</div>
+        <div class="shacl-card" id="shacl-card">
+          <div class="shacl-icon">✓</div>
+          <div>
+            <div style="font-weight:500" id="shacl-title">输入事件已通过校验</div>
+            <div style="font-size:10px;color:var(--ink-mute);margin-top:2px;font-family:'JetBrains Mono',monospace" id="shacl-sub">5/5 必填字段就绪 · 来源系统已认证</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="side-section-h">候选动作 → 物理世界</div>
+        <div class="actions-list" id="actions"></div>
+        <div class="writeback-row" id="writeback-row"></div>
+      </div>
+
+      <button class="execute-btn" id="exec-btn">
+        下发执行 · 含幂等补偿 <span class="arrow">→</span>
+      </button>
+    </div>
+
+    <!-- TAB: 5-tuple -->
+    <div class="tab-panel" data-tab="tuple">
+      <div class="side-section-h">对象 · 状态 · 事件 · 约束 · 动作</div>
+      <div class="tuple-grid" id="tuple-grid"></div>
+    </div>
+
+    <!-- TAB: PROV lineage -->
+    <div class="tab-panel" data-tab="prov">
+      <div class="side-section-h">PROV-O · 决策派生链</div>
+      <div class="prov-chain" id="prov-chain"></div>
+    </div>
+
+    <!-- TAB: ontology snippet -->
+    <div class="tab-panel" data-tab="onto">
+      <div class="side-section-h">OWL/Turtle · 4D 模式片段</div>
+      <pre class="code-block" id="onto-code"></pre>
+    </div>
+
+  </aside>
+
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <div class="footer-item">命名空间 · <b id="ns-now">ahs:water</b></div>
+    <div class="footer-item">事件总线 · <b>Kafka topic: ahs.lifeline.events.v1</b></div>
+    <div class="footer-item">置信度阈值 · <b>θ = 0.75</b></div>
+    <div class="footer-item">认知内核 · <b>WBM 世界行为模型</b></div>
+    <div class="footer-item right">自主运行率 · <b id="footer-poc">86.8% → 目标 95%</b></div>
+    <div class="footer-item">© AHS 爱化身 · Agentrix 认知操作系统 · 2026</div>
+  </div>
+
+</div>
+
+<!-- ============== 导入向导 ============== -->
+<div class="wizard-overlay" id="wiz-overlay">
+  <div class="wizard">
+
+    <div class="wiz-head">
+      <div class="wiz-title">导入业务数据 · <em>R2RML 自动语义化</em></div>
+      <div class="wiz-sub">不用改造现有系统 —— 用 R2RML 把 Excel/数据库的列自动映射成本体语言,再自动挂到 4D 孪生图谱上。</div>
+      <button class="wiz-close" id="wiz-close">×</button>
+    </div>
+
+    <div class="wiz-steps">
+      <div class="wiz-step" data-step="0">
+        <div class="ws-num">0</div>
+        <div class="ws-name">选择数据源 · <b>Excel / CSV / DB</b></div>
+      </div>
+      <div class="wiz-step-arrow"><div class="ws-fill" id="ws-fill-0"></div></div>
+      <div class="wiz-step" data-step="1">
+        <div class="ws-num">1</div>
+        <div class="ws-name"><b>R2RML 表头映射</b> · 列 → 实体/属性</div>
+      </div>
+      <div class="wiz-step-arrow"><div class="ws-fill" id="ws-fill-1"></div></div>
+      <div class="wiz-step" data-step="2">
+        <div class="ws-num">2</div>
+        <div class="ws-name"><b>语义对齐</b> · 概念 + 业务规则</div>
+      </div>
+      <div class="wiz-step-arrow"><div class="ws-fill" id="ws-fill-2"></div></div>
+      <div class="wiz-step" data-step="3">
+        <div class="ws-num">3</div>
+        <div class="ws-name"><b>实例挂载</b> · 写入 4D 图谱</div>
+      </div>
+    </div>
+
+    <div class="wiz-body">
+
+      <!-- STEP 0: file selection -->
+      <div class="wiz-pane active" data-step="0">
+
+        <!-- Template library + upload -->
+        <div class="tpl-bar">
+          <div class="tpl-bar-h">
+            <span class="tpl-bar-h-l">选择行业模板</span>
+            <span class="tpl-bar-h-r">或上传你们自己的 Excel — <em>OAG 标准五段式结构会被自动识别</em></span>
+          </div>
+          <div class="tpl-grid">
+            <div class="tpl-card active" data-tpl="jk">
+              <div class="tpl-icon" style="background:linear-gradient(135deg,#1d6f42,#166534)">XLS</div>
+              <div class="tpl-info">
+                <div class="tpl-name">AHS · 供水管网</div>
+                <div class="tpl-meta">管线 · 阀门 · DMA · 水质 · 3 sheet</div>
+              </div>
+              <div class="tpl-tag">内置</div>
+            </div>
+            <div class="tpl-card" data-tpl="manu">
+              <div class="tpl-icon" style="background:linear-gradient(135deg,#c2410c,#7c2d12)">XLS</div>
+              <div class="tpl-info">
+                <div class="tpl-name">AHS · 城市配电网</div>
+                <div class="tpl-meta">馈线 · 开关 · 负荷 · FLISR · 2 sheet</div>
+              </div>
+              <div class="tpl-tag">内置</div>
+            </div>
+            <div class="tpl-card" data-tpl="xb">
+              <div class="tpl-icon" style="background:linear-gradient(135deg,#1e6091,#0c4a6e)">XLS</div>
+              <div class="tpl-info">
+                <div class="tpl-name">AHS · 地下管网/管廊</div>
+                <div class="tpl-meta">舱段 · 燃气 · 沉降 · 气体 · 2 sheet</div>
+              </div>
+              <div class="tpl-tag">内置</div>
+            </div>
+            <div class="tpl-card upload" id="upload-card" data-tpl="upload">
+              <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display:none">
+              <div class="tpl-icon" style="background:linear-gradient(135deg,#7a6e63,#4a413a)">+</div>
+              <div class="tpl-info">
+                <div class="tpl-name">上传你们自己的 Excel</div>
+                <div class="tpl-meta">支持 .xlsx / .xls / .csv · OAG 五段式结构</div>
+              </div>
+              <div class="tpl-tag" style="background:var(--accent);color:var(--paper);border-color:var(--accent)">+ 上传</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Currently selected file display -->
+        <div class="file-card selected" id="file-card">
+          <div class="file-icon" id="file-icon-el">XLS</div>
+          <div style="flex:1">
+            <div class="file-name" id="file-name-el">AHS_供水管网_时空本体数据模板.xlsx</div>
+            <div class="file-meta" id="file-meta-el">3 个工作表 · 219 行实例 · 56 个本体类 · 19 条业务规则</div>
+          </div>
+          <div class="parse-status" id="parse-status">✓ 已识别</div>
+        </div>
+
+        <div class="sheet-tabs" id="sheet-tabs-host">
+          <!-- dynamically populated -->
+        </div>
+
+        <div id="preview-table-host"></div>
+
+        <div class="onto-summary" id="onto-summary">
+          <span class="onto-summary-h">检测到的本体结构:</span>
+          <div class="onto-summary-body" id="onto-summary-body">
+            <span style="color:var(--accent)">实体类_Classes</span> <span style="color:var(--ink-mute)">×</span> 16 ·
+            <span style="color:var(--accent-2)">实例_Individuals</span> <span style="color:var(--ink-mute)">×</span> 24 ·
+            <span style="color:var(--accent-3)">关系_Relations</span> <span style="color:var(--ink-mute)">×</span> 18 ·
+            <span style="color:var(--accent-4)">数据属性</span> <span style="color:var(--ink-mute)">×</span> 10 ·
+            <span style="color:var(--accent-5)">业务规则</span> <span style="color:var(--ink-mute)">×</span> 6 ·
+            <span style="color:var(--info)">智能体配置</span> <span style="color:var(--ink-mute)">×</span> 1
+          </div>
+        </div>
+
+        <!-- Parse progress overlay (shown during real upload parse) -->
+        <div class="parse-overlay" id="parse-overlay">
+          <div class="parse-spinner"></div>
+          <div class="parse-text" id="parse-text">解析 Excel · 识别 OAG 五段式结构…</div>
+        </div>
+      </div>
+
+      <!-- STEP 1: R2RML mapping -->
+      <div class="wiz-pane" data-step="1">
+        <div class="r2rml-canvas">
+          <div class="r2rml-side">
+            <div class="r2rml-side-h">Excel 列 (源)</div>
+            <div id="r2rml-cols-host"></div>
+          </div>
+          <div class="r2rml-mid"><svg id="r2rml-svg" viewBox="0 0 60 600" preserveAspectRatio="none"></svg></div>
+          <div class="r2rml-side">
+            <div class="r2rml-side-h">本体实体 / 属性 (目标)</div>
+            <div id="r2rml-onto-host"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: semantic alignment -->
+      <div class="wiz-pane" data-step="2">
+        <div class="align-canvas">
+          <div class="align-col">
+            <div class="align-col-h">数据属性 · <em>来自 Excel</em></div>
+            <div id="align-attrs-host"></div>
+          </div>
+          <div class="align-col">
+            <div class="align-col-h">本体概念 · <em>语义对齐目标</em></div>
+            <div id="align-concepts-host"></div>
+          </div>
+          <div class="align-col">
+            <div class="align-col-h">业务规则 · <em>触发关联</em></div>
+            <div id="align-rules-host"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: instance attachment to graph -->
+      <div class="wiz-pane" data-step="3">
+        <div class="attach-canvas">
+          <div>
+            <div class="r2rml-side-h">实例数据流 · <span style="color:var(--ok);font-style:normal" id="attach-counter">0 / 0</span></div>
+            <div class="instance-stream" id="instance-stream"></div>
+          </div>
+          <div>
+            <div class="r2rml-side-h">4D 本体图谱 · 实时挂载</div>
+            <div class="graph-panel">
+              <svg id="attach-graph" viewBox="0 0 500 400"></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="wiz-foot">
+      <div class="wiz-quote" id="wiz-quote">
+        这一步用 <b>R2RML 映射规则</b>把你们 Excel 的列自动翻译成本体语言 — 设备编码、工单编号都能一一对应。<b>不用你们改现有系统。</b>
+      </div>
+      <div class="wiz-actions">
+        <button class="wiz-btn" id="wiz-back">上一步</button>
+        <button class="wiz-btn primary" id="wiz-next">下一步 →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   空间本体 4D 数字孪生 · 企业级运行系统
+   - 5 层架构 + 5 类 Agent 协同 (Observer→Diagnoser→Planner→Executor→Auditor)
+   - SHACL 校验 + PROV-O 谱系 + 决策置信度门 + 幂等执行
+   - 5 个行业场景的对象/状态/事件/约束/动作五元组
+   ===================================================================== */
+
+// ---------- 场景数据 (AHS Agentrix · 跨行业 5 大智能体场景 · 时空本体 4D 数字孪生 + Agent OS 深度推理 + 闭环自主执行) ----------
+const SCENES = {
+  power: {
+    code:"01", idx:1, label:"能源·电力调度智能体", sub:"故障自愈·负荷调度",
+    tag:"能源 · 电网调度", crumb:"电力调度 · 故障自愈", ns:"ahs:power",
+    title:`能源电网<br><em>调度自愈孪生</em>`,
+    subtitle:"馈线/开关/负荷/新能源 多源融合 → Agent OS 秒级故障定位 + 自动隔离 + 非故障区转供（FLISR）+ 源荷储协同。",
+    kpis:[
+      {k:"供电可靠率", v:"99.98%", d:"+0.02", dir:"up"},
+      {k:"故障复电时间", v:"42s", d:"−92%", dir:"up"},
+      {k:"10kV 馈线-12", v:"过流跳闸", d:"故障", dir:"down"},
+    ],
+    archMetrics:{rate:"6.8k", nodes:"2.4k", rules:"196", fps:"60", ack:"99.8"},
+    agentTasks:[
+      "馈线 FTU/DTU 故障录波 + 负荷/新能源融合",
+      "图谱拓扑分析 · 故障区段精准定位",
+      "FLISR 推演: 隔离 + 非故障区转供路径",
+      "下发开关分合闸 · 自愈复电 + 源荷储调度",
+      "复盘 SAIDI/SAIFI · 优化保护定值"
+    ],
+    agentLats:["28ms","118ms","182ms","420ms","36ms"],
+    confidence: 0.93,
+    anomEvent:"10kV 馈线-12 #S07 开关过流跳闸 · 故障电流 8.4kA · 影响 3 个台区",
+    shacl:{ok:true, title:"配电观测合规", sub:"故障录波 + SOE 时序对齐 · 拓扑模型完整"},
+    tuples:[
+      {k:"对象", v:"Feeder · Switch · Transformer · DTU · FTU · LoadNode · DG储能 · Customer"},
+      {k:"状态", v:"Voltage · Current · LoadFactor · SwitchState · FaultFlag · PowerFlow"},
+      {k:"事件", v:"OverCurrent · GroundFault · OverLoad · VoltageSag · DGTrip"},
+      {k:"约束", v:"N-1 安全 · 转供容量裕度 · 电压偏差 ±7% · 自愈时间 ≤ 60s"},
+      {k:"动作", v:"OpenSwitch · CloseTie · TransferLoad · DispatchStorage · LogPROV"},
+    ],
+    actions:[
+      {n:"分闸 S07/S09 隔离故障段", m:"DTU · 幂等键 SW-12-V771", s:"running", idem:true},
+      {n:"合联络开关 T-03 转供",    m:"FTU · TIE-03-V338",      s:"running", idem:true},
+      {n:"非故障区 2 台区复电 + 储能补",m:"配网自愈 · FLISR",       s:"done",    idem:true},
+      {n:"派检修 · 故障段排查",      m:"抢修调度 · WO-PWR-5512",  s:"pending", idem:true},
+    ],
+    writeback:["DTU/FTU","配网自愈","调度SCADA","抢修调度"],
+    prov:[
+      {kind:"obs",      k:"OBSERVATION", t:"-00:42", b:"故障录波 @S07 · 故障电流 = <code>8.4kA</code>"},
+      {kind:"rule",     k:"RULE",        t:"-00:42", b:"过流保护规则 R-PWR-02 命中 + 拓扑校验"},
+      {kind:"agent",    k:"DIAGNOSER",   t:"-00:41", b:"图谱拓扑分析: 故障段 S07-S09 之间"},
+      {kind:"agent",    k:"PLANNER",     t:"-00:40", b:"FLISR: 隔离 + T-03 转供 (容量裕度足 0.93)"},
+      {kind:"decision", k:"DECISION",    t:"-00:39", b:"自动自愈 · <code>0.93 ≥ θ</code>"},
+      {kind:"action",   k:"ACTION",      t:"-00:38", b:"DTU 分合闸 · 42s 完成复电"},
+    ],
+    onto:`@prefix ahs:  <http://ahs.ai/agentrix/power#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+ahs:Feeder_10kV_12 a ahs:DistributionFeeder ;
+  ahs:voltageLevel "10kV" ;
+  ahs:hasSwitch    ahs:Switch_S07, ahs:Switch_S09 ;
+  ahs:hasTieSwitch ahs:TieSwitch_T03 ;
+  ahs:supplies     ahs:Substation_TZ_3 .
+
+ahs:Switch_S07 a ahs:LoadSwitch ;
+  sosa:hosts       ahs:FTU_S07 ;
+  ahs:switchState  "open" .
+
+ahs:Fault_OC_2026 a ahs:Event ;
+  ahs:faultCurrent 8400 ;
+  ahs:faultType    "overcurrent" ;
+  prov:wasInformedBy ahs:Obs_Waveform_S07 .
+
+ahs:Decision_FLISR_771 a ahs:Decision ;
+  prov:wasDerivedFrom ahs:Fault_OC_2026 ;
+  ahs:recommends      ahs:Action_Isolate_Transfer ;
+  ahs:confidence      0.93 .`,
+  },
+
+  water: {
+    code:"02", idx:2, label:"水务治理智能体", sub:"爆管·漏损·水质",
+    tag:"水务 · DMA 分区", crumb:"水务治理 · 爆管定位", ns:"ahs:water",
+    title:`水务治理<br><em>爆管漏损孪生</em>`,
+    subtitle:"压力/流量/水质 多源融合 → Agent OS 推演爆管位置 · 秒级关阀隔离 · 最小影响停水 · 漏损管控。",
+    kpis:[
+      {k:"产销差(漏损率)", v:"8.4%", d:"−3.6", dir:"up"},
+      {k:"爆管定位时间", v:"96s", d:"−88%", dir:"up"},
+      {k:"DMA-07 异常", v:"压降 0.18MPa", d:"疑似爆管", dir:"down"},
+    ],
+    archMetrics:{rate:"4.6k", nodes:"1.2k", rules:"148", fps:"60", ack:"99.7"},
+    agentTasks:[
+      "DMA 分区压力/流量/夜间最小流融合",
+      "水力模型 + 图谱定位爆管管段 ±50m",
+      "评估关阀方案 · 最小停水影响域",
+      "下发 SCADA 关阀 + 派抢修 + 短信通知",
+      "PROV 留痕 · 复盘漏损与抢修时效"
+    ],
+    agentLats:["48ms","178ms","220ms","680ms","42ms"],
+    confidence: 0.90,
+    anomEvent:"DMA-07 #G2840 节点压力骤降 0.18MPa · 流量异常 +1.6× · 疑似 DN400 爆管",
+    shacl:{ok:true, title:"供水观测合规", sub:"SSN/SOSA · 压力/流量/水质 8/8 完整 · GIS 已绑定"},
+    tuples:[
+      {k:"对象", v:"Pipe · Valve · Pump · DMA · PressureSensor · FlowMeter · Hydrant · Customer"},
+      {k:"状态", v:"Pressure · Flow · WaterQuality · MNF · LeakageRate · ServiceArea"},
+      {k:"事件", v:"PipeBurst · LeakDetected · QualityAlarm · PressureDrop · ValveStuck"},
+      {k:"约束", v:"供水保障率 · 最小服务压力 · 关阀影响域 ≤ 200户 · 抢修响应 ≤ 2h"},
+      {k:"动作", v:"CloseValve · DispatchRepair · NotifyCustomer · AdjustPump · LogPROV"},
+    ],
+    actions:[
+      {n:"关闭 V-2841/V-2843 隔离爆管", m:"SCADA · 幂等键 VALVE-07-V881", s:"running", idem:true},
+      {n:"提升 #3 泵站补压保供",        m:"PLC · PUMP-3-V442",          s:"running", idem:true},
+      {n:"短信通知影响区 186 户",       m:"客服平台 · 多渠道",           s:"done",    idem:false},
+      {n:"派抢修队 · GIS 定位导航",     m:"抢修调度 · WO-WTR-7721",      s:"pending", idem:true},
+    ],
+    writeback:["SCADA","GIS","客服平台","抢修调度"],
+    prov:[
+      {kind:"obs",      k:"OBSERVATION", t:"-01:36", b:"sosa:Observation @G2840 · 压力 = <code>−0.18MPa</code> 骤降"},
+      {kind:"rule",     k:"RULE",        t:"-01:35", b:"<code>SHACL</code> + 水力规则 R-WTR-04 命中 (爆管模式)"},
+      {kind:"agent",    k:"DIAGNOSER",   t:"-01:34", b:"水力模型反推: 爆管点位于 DN400 主管 ±50m"},
+      {kind:"agent",    k:"PLANNER",     t:"-01:32", b:"候选: 关阀隔离 (0.90) / 降压运行 (0.64) / 旁通 (0.51)"},
+      {kind:"decision", k:"DECISION",    t:"-01:31", b:"采纳关阀方案 · 置信度 <code>0.90 ≥ θ</code>"},
+      {kind:"action",   k:"ACTION",      t:"-01:30", b:"<code>POST /scada/valve/close</code> · idemKey VALVE-07-V881"},
+    ],
+    onto:`@prefix ahs:  <http://ahs.ai/agentrix/water#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix geo:  <http://www.opengis.net/ont/geosparql#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+ahs:Pipe_DN400_2840 a ahs:WaterMain ;
+  ahs:inDMA       ahs:DMA_07 ;
+  ahs:diameter    400 ;
+  geo:hasGeometry "LINESTRING(116.40 39.91, 116.41 39.92)" ;
+  sosa:hosts      ahs:PressureSensor_G2840, ahs:FlowMeter_G2840 .
+
+ahs:DMA_07 a ahs:DistrictMeteredArea ;
+  ahs:servesCustomers 186 ;
+  ahs:hasIsolationValve ahs:Valve_V2841, ahs:Valve_V2843 .
+
+ahs:PipeBurst_2026 a ahs:Event ;
+  ahs:detectedAt  "2026-06-15T08:42:00Z" ;
+  ahs:pressureDrop 0.18 ;
+  prov:wasInformedBy ahs:Obs_Pressure_G2840 .
+
+ahs:Decision_VALVE_881 a ahs:Decision ;
+  prov:wasDerivedFrom ahs:PipeBurst_2026 ;
+  ahs:recommends      ahs:Action_CloseValve_2841 ;
+  ahs:confidence      0.90 .`,
+  },
+
+  rail: {
+    code:"03", idx:3, label:"交通·轨道调度智能体", sub:"行车调度·客流预测",
+    tag:"交通 · 轨道线网", crumb:"轨道交通 · 客流调度", ns:"ahs:rail",
+    title:`轨道交通<br><em>客流调度孪生</em>`,
+    subtitle:"列车/线网/客流/票务 多源融合 → Agent OS 预测大客流 · 动态加开列车 · 限流疏导 · 行车间隔优化。",
+    kpis:[
+      {k:"运行图兑现率", v:"99.7%", d:"+0.3", dir:"up"},
+      {k:"大客流预警提前", v:"18min", d:"+11", dir:"up"},
+      {k:"换乘站 T3", v:"密度 5.6人/㎡", d:"超阈值", dir:"down"},
+    ],
+    archMetrics:{rate:"12.4k", nodes:"3.6k", rules:"168", fps:"60", ack:"99.6"},
+    agentTasks:[
+      "列车位置/AFC闸机/视频客流 多源融合",
+      "图谱推演 T3 换乘站客流时空热力",
+      "OD 矩阵预测 + 加开/限流策略推演",
+      "下发加开列车 + 限流闸机 + 疏导广播",
+      "PROV 留痕 · 复盘运行图与客流时效"
+    ],
+    agentLats:["32ms","142ms","208ms","460ms","40ms"],
+    confidence: 0.91,
+    anomEvent:"换乘站 T3 站台客流密度 5.6 人/㎡ · 进站率 +2.3× · 18min 后或达 7 人/㎡ 红线",
+    shacl:{ok:true, title:"客流观测合规", sub:"AFC + 视频 + 列车定位 时空对齐 · OD 模型完整"},
+    tuples:[
+      {k:"对象", v:"Train · Line · Station · Platform · Gate · Passenger · OD矩阵 · Timetable"},
+      {k:"状态", v:"Position · Headway · CrowdDensity · InflowRate · DwellTime · Punctuality"},
+      {k:"事件", v:"CrowdSurge · TrainDelay · GateCongestion · PlatformFull · ServiceDisrupt"},
+      {k:"约束", v:"站台密度 ≤ 6人/㎡ · 最小行车间隔 · 运行图兑现 · 疏散时间"},
+      {k:"动作", v:"AddTrain · AdjustHeadway · LimitInflow · Broadcast · DispatchStaff"},
+    ],
+    actions:[
+      {n:"加开 2 列备车上线 · 缩短间隔", m:"行车调度 · 幂等键 TR-ADD-V612", s:"running", idem:true},
+      {n:"T3 进站闸机限流 70%",         m:"AFC · GATE-T3-V338",          s:"running", idem:true},
+      {n:"站厅疏导广播 + 引导分流",      m:"乘客信息 · PIS 多渠道",        s:"done",    idem:false},
+      {n:"派站务增援 T3 站台",           m:"人员调度 · WO-RAIL-3312",      s:"pending", idem:true},
+    ],
+    writeback:["行车调度","AFC票务","PIS广播","人员调度"],
+    prov:[
+      {kind:"obs",      k:"OBSERVATION", t:"-18:00", b:"sosa:Observation @T3 · 客流密度 = <code>5.6人/㎡</code> ↑"},
+      {kind:"rule",     k:"RULE",        t:"-00:40", b:"大客流规则 R-RAIL-03 命中 + OD 趋势校验"},
+      {kind:"agent",    k:"DIAGNOSER",   t:"-00:38", b:"客流模型: 18min 后 T3 或达 7人/㎡ 红线"},
+      {kind:"agent",    k:"PLANNER",     t:"-00:36", b:"加开列车 + 限流疏导 (得分 0.91)"},
+      {kind:"decision", k:"DECISION",    t:"-00:35", b:"自动加开 + 限流 · <code>0.91 ≥ θ</code>"},
+      {kind:"action",   k:"ACTION",      t:"-00:34", b:"行车调度下发 + AFC 限流 + PIS 广播"},
+    ],
+    onto:`@prefix ahs:  <http://ahs.ai/agentrix/rail#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+ahs:Station_T3 a ahs:TransferStation ;
+  ahs:onLine        ahs:Line_2, ahs:Line_5 ;
+  ahs:hasPlatform   ahs:Platform_T3_A, ahs:Platform_T3_B ;
+  ahs:crowdRedline  6.0 ;
+  sosa:hosts        ahs:CrowdSensor_T3, ahs:AFCGate_T3 .
+
+ahs:CrowdSurge_2026 a ahs:Event ;
+  ahs:currentDensity 5.6 ;
+  ahs:inflowFactor   2.3 ;
+  ahs:forecastDensity 7.0 ;
+  prov:wasInformedBy ahs:Obs_Crowd_T3 .
+
+ahs:Decision_ADD_612 a ahs:Decision ;
+  prov:wasDerivedFrom ahs:CrowdSurge_2026 ;
+  ahs:recommends      ahs:Action_AddTrain_LimitInflow ;
+  ahs:confidence      0.91 .`,
+  },
+
+  finance: {
+    code:"04", idx:4, label:"金融·风控反欺诈智能体", sub:"关系穿透·团伙识别",
+    tag:"金融 · 风控反欺诈", crumb:"金融风控 · 反欺诈", ns:"ahs:finance",
+    title:`金融风控<br><em>反欺诈穿透孪生</em>`,
+    subtitle:"账户/交易/设备/关系 多源融合 → Agent OS 穿透关系网络 · 识别团伙欺诈 · 推演风险传染 · 实时拦截。",
+    kpis:[
+      {k:"团伙识别召回", v:"+31%", d:"vs 规则", dir:"up"},
+      {k:"实时决策时延", v:"120ms", d:"在线", dir:"up"},
+      {k:"团伙 #C-204", v:"闭环资金链", d:"高危", dir:"down"},
+    ],
+    archMetrics:{rate:"38.6k", nodes:"86k", rules:"428", fps:"60", ack:"99.9"},
+    agentTasks:[
+      "账户/交易/设备指纹/关系 图谱融合",
+      "图谱穿透: 资金闭环 + 设备共用识别团伙",
+      "担保圈/股权链 → 风险传染路径推演",
+      "下发反欺诈拦截 + 授信冻结 + 人工复核",
+      "决策因果链留痕 → 可解释合规报送"
+    ],
+    agentLats:["18ms","88ms","152ms","240ms","30ms"],
+    confidence: 0.94,
+    anomEvent:"团伙 #C-204 · 7 账户资金闭环回流 + 3 设备共用 · 疑似套现欺诈团伙",
+    shacl:{ok:true, title:"风控数据合规", sub:"交易流水 + 设备指纹 + 关系链 时序对齐 · 可解释"},
+    tuples:[
+      {k:"对象", v:"Account · Transaction · Device · Enterprise · Guarantee · Equity · Customer"},
+      {k:"状态", v:"RiskScore · FlowAmount · DeviceShared · LoopDepth · ExposureLevel"},
+      {k:"事件", v:"FraudRing · CashOut · GuaranteeContagion · DefaultRisk · AbnormalFlow"},
+      {k:"约束", v:"授信敞口上限 · 关联交易阈值 · 决策可解释 · 反洗钱合规"},
+      {k:"动作", v:"BlockTransaction · FreezeCredit · FlagReview · AdjustLimit · LogPROV"},
+    ],
+    actions:[
+      {n:"拦截 #C-204 团伙 7 账户交易", m:"风控引擎 · 幂等键 FR-204-V991", s:"running", idem:true},
+      {n:"冻结关联授信敞口 480 万",     m:"授信系统 · CR-FREEZE-V442",    s:"running", idem:true},
+      {n:"生成反欺诈复核工单",           m:"案件平台 · 多级审核",          s:"done",    idem:false},
+      {n:"可疑交易报送 + 因果链留痕",    m:"合规报送 · 区块链审计",        s:"done",    idem:true},
+    ],
+    writeback:["风控引擎","授信系统","案件平台","合规报送"],
+    prov:[
+      {kind:"obs",      k:"OBSERVATION", t:"-00:08", b:"图谱观测 @C-204 · 资金闭环深度 = <code>7 跳</code>"},
+      {kind:"rule",     k:"RULE",        t:"-00:08", b:"团伙识别规则 R-FIN-07 命中 + 设备共用校验"},
+      {kind:"agent",    k:"DIAGNOSER",   t:"-00:07", b:"图谱穿透: 7 账户闭环 + 3 设备共用 → 团伙"},
+      {kind:"agent",    k:"PLANNER",     t:"-00:06", b:"拦截 + 冻结 + 复核 (置信 0.94)"},
+      {kind:"decision", k:"DECISION",    t:"-00:06", b:"实时拦截 · <code>0.94 ≥ θ</code>"},
+      {kind:"action",   k:"ACTION",      t:"-00:05", b:"风控引擎拦截 · 120ms 完成决策"},
+    ],
+    onto:`@prefix ahs:  <http://ahs.ai/agentrix/finance#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+ahs:Ring_C204 a ahs:FraudRing ;
+  ahs:involvesAccount ahs:Acct_A1, ahs:Acct_A2, ahs:Acct_A3 ;
+  ahs:sharesDevice    ahs:Device_D1 ;
+  ahs:loopDepth       7 ;
+  ahs:riskScore       0.94 .
+
+ahs:Acct_A1 a ahs:Account ;
+  ahs:transactsWith ahs:Acct_A2 ;
+  ahs:boundDevice   ahs:Device_D1 .
+
+ahs:FraudEvent_2026 a ahs:Event ;
+  ahs:fraudType    "cash-out-ring" ;
+  ahs:exposure     4800000 ;
+  prov:wasInformedBy ahs:Obs_Graph_C204 .
+
+ahs:Decision_BLOCK_991 a ahs:Decision ;
+  prov:wasDerivedFrom ahs:FraudEvent_2026 ;
+  ahs:recommends      ahs:Action_Block_Freeze ;
+  ahs:confidence      0.94 .`,
+  },
+
+  citysvc: {
+    code:"05", idx:5, label:"城市服务·环卫人车智能体", sub:"垃圾处理·人车管理",
+    tag:"城市服务 · 环卫人车", crumb:"城市服务 · 人车调度", ns:"ahs:citysvc",
+    title:`城市服务<br><em>环卫人车孪生</em>`,
+    subtitle:"垃圾房/清运车/环卫工/满溢传感 多源融合 → Agent OS 预测满溢 · 动态派车 · 人车路径优化 · 闭环作业。",
+    kpis:[
+      {k:"清运及时率", v:"97.8%", d:"+9.2", dir:"up"},
+      {k:"满溢响应时间", v:"22min", d:"−64%", dir:"up"},
+      {k:"垃圾房 G-118", v:"满溢 92%", d:"待清运", dir:"down"},
+    ],
+    archMetrics:{rate:"8.2k", nodes:"5.4k", rules:"156", fps:"60", ack:"99.5"},
+    agentTasks:[
+      "垃圾房满溢/清运车 GPS/环卫工定位融合",
+      "图谱预测满溢点 + 人车时空分布",
+      "动态派车 + 多点清运路径优化推演",
+      "下发清运工单 + 车辆导航 + 人员调度",
+      "PROV 留痕 · 复盘清运时效与里程"
+    ],
+    agentLats:["42ms","156ms","224ms","520ms","48ms"],
+    confidence: 0.88,
+    anomEvent:"垃圾房 G-118 满溢度 92% · 投放速率 +1.8× · 30min 内或溢出 · 周边 3 房联动",
+    shacl:{ok:true, title:"环卫观测合规", sub:"满溢 + 车辆 GPS + 人员定位 时空对齐 · GIS 绑定"},
+    tuples:[
+      {k:"对象", v:"WasteRoom · CollectTruck · Worker · Bin · FillSensor · Route · Citizen"},
+      {k:"状态", v:"FillLevel · TruckPosition · WorkerLocation · DisposalRate · RouteLoad"},
+      {k:"事件", v:"BinOverflow · TruckIdle · RouteCongest · WorkerSOS · IllegalDump"},
+      {k:"约束", v:"满溢 ≤ 90% · 清运响应 ≤ 30min · 人车作业安全 · 路径里程最优"},
+      {k:"动作", v:"DispatchTruck · OptimizeRoute · AssignWorker · Navigate · LogPROV"},
+    ],
+    actions:[
+      {n:"派 #清运车-07 就近清运 G-118", m:"调度平台 · 幂等键 TRK-07-V776", s:"running", idem:true},
+      {n:"规划 3 房联动清运最优路径",     m:"路径引擎 · ROUTE-G-V331",      s:"running", idem:true},
+      {n:"导航下发 + 环卫工任务派发",     m:"车载终端 · 多点导航",          s:"done",    idem:false},
+      {n:"人车作业安全监测值守",          m:"人车管理 · WO-CITY-3318",      s:"pending", idem:true},
+    ],
+    writeback:["调度平台","路径引擎","车载终端","人车管理"],
+    prov:[
+      {kind:"obs",      k:"OBSERVATION", t:"-30:00", b:"sosa:Observation @G-118 · 满溢度 = <code>92%</code> ↑"},
+      {kind:"rule",     k:"RULE",        t:"-00:22", b:"满溢规则 R-CITY-04 命中 + 投放速率校验"},
+      {kind:"agent",    k:"DIAGNOSER",   t:"-00:20", b:"满溢模型: 30min 内 G-118 或溢出 · 联动 3 房"},
+      {kind:"agent",    k:"PLANNER",     t:"-00:18", b:"就近派车 + 3 房联动路径优化 (0.88)"},
+      {kind:"decision", k:"DECISION",    t:"-00:17", b:"自动派车 · <code>0.88 ≥ θ</code>"},
+      {kind:"action",   k:"ACTION",      t:"-00:16", b:"调度平台派车 + 路径下发 + 人员调度"},
+    ],
+    onto:`@prefix ahs:  <http://ahs.ai/agentrix/citysvc#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix geo:  <http://www.opengis.net/ont/geosparql#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+ahs:WasteRoom_G118 a ahs:WasteRoom ;
+  ahs:fillLevel    0.92 ;
+  ahs:overflowRedline 0.90 ;
+  geo:hasGeometry  "POINT(116.42 39.93)" ;
+  ahs:nearbyRoom   ahs:Room_G117, ahs:Room_G119, ahs:Room_G120 ;
+  sosa:hosts       ahs:FillSensor_G118 .
+
+ahs:CollectTruck_07 a ahs:CollectionTruck ;
+  ahs:atLocation   "POINT(116.41 39.92)" ;
+  ahs:capacity     "8t" ;
+  ahs:onRoute      ahs:Route_G .
+
+ahs:OverflowEvent_2026 a ahs:Event ;
+  ahs:fillLevel    0.92 ;
+  ahs:disposalRate 1.8 ;
+  prov:wasInformedBy ahs:Obs_Fill_G118 .
+
+ahs:Decision_DISPATCH_776 a ahs:Decision ;
+  prov:wasDerivedFrom ahs:OverflowEvent_2026 ;
+  ahs:recommends      ahs:Action_DispatchTruck_Route ;
+  ahs:confidence      0.88 .`,
+  },
+};
+
+const INDUSTRY_ORDER = ["power","water","rail","finance","citysvc"];
+const ICONS = { power:"⚡", water:"≈", rail:"⛍", finance:"◈", citysvc:"♺" };
+
+
+// ===========================================================
+// Three.js 设置
+// ===========================================================
+const canvas = document.getElementById("three-canvas");
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+const scene = new THREE.Scene();
+scene.background = null;
+scene.fog = new THREE.Fog(0x0a1119, 40, 120);
+
+const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 500);
+camera.position.set(26, 20, 26);
+camera.lookAt(0,2,0);
+
+function resize(){
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w,h,false);
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", resize);
+setTimeout(resize,0);
+
+const amb = new THREE.AmbientLight(0x6688bb, 0.7);
+scene.add(amb);
+const key = new THREE.DirectionalLight(0xddeeff, 0.9);
+key.position.set(20,30,15); scene.add(key);
+const rim = new THREE.DirectionalLight(0x22d3ee, 0.35);
+rim.position.set(-20,10,-10); scene.add(rim);
+const rim2 = new THREE.DirectionalLight(0xa78bfa, 0.22);
+rim2.position.set(10,8,-20); scene.add(rim2);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(120,120),
+  new THREE.MeshLambertMaterial({color:0x0a1119})
+);
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.01; scene.add(ground);
+
+const grid = new THREE.GridHelper(120, 60, 0x22d3ee, 0x22d3ee);
+grid.material.transparent = true; grid.material.opacity = 0.05;
+scene.add(grid);
+
+let sceneGroup = new THREE.Group();
+scene.add(sceneGroup);
+
+const COL = {
+  ink:0x0a1622, paper:0x101d2e, paper2:0x16273b,
+  accent:0x22d3ee, accent2:0x3b82f6, accent3:0x34d399,
+  accent4:0xfbbf24, accent5:0x8b5cf6,
+  ok:0x34d399, warn:0xf43f5e, info:0x22d3ee,
+  mute:0x64748b
+};
+
+function makeBlock(w,h,d,color,outline=true){
+  const g = new THREE.Group();
+  const cube = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshLambertMaterial({color}));
+  cube.position.y = h/2; g.add(cube);
+  if(outline){
+    const edges = new THREE.EdgesGeometry(cube.geometry);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:COL.ink}));
+    line.position.y = h/2; g.add(line);
+  }
+  return g;
+}
+
+function makePulse(color=COL.accent){
+  const g = new THREE.Group();
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.25,12,12), new THREE.MeshBasicMaterial({color}));
+  g.add(dot);
+  for(let i=0;i<3;i++){
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.3,0.34,32),
+      new THREE.MeshBasicMaterial({color, transparent:true, opacity:0.6, side:THREE.DoubleSide})
+    );
+    ring.rotation.x = -Math.PI/2;
+    ring.userData = {phase:i*0.7};
+    g.add(ring);
+  }
+  g.userData.isPulse = true;
+  return g;
+}
+
+function makeOntologyLayer(positions, connections){
+  const g = new THREE.Group();
+  g.position.y = 9;
+  const nodes = [];
+  positions.forEach((p,i)=>{
+    const n = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2,10,10),
+      new THREE.MeshBasicMaterial({color: i%3===0?COL.accent:(i%3===1?COL.accent2:COL.accent3)})
+    );
+    n.position.set(p[0],p[1],p[2]);
+    nodes.push(n); g.add(n);
+  });
+  connections.forEach(([a,b])=>{
+    const lg = new THREE.BufferGeometry().setFromPoints([nodes[a].position, nodes[b].position]);
+    g.add(new THREE.Line(lg, new THREE.LineBasicMaterial({color:COL.ink, transparent:true, opacity:0.32})));
+  });
+  // tethers from ontology to ground
+  nodes.forEach(n=>{
+    const lg = new THREE.BufferGeometry().setFromPoints([n.position.clone(), new THREE.Vector3(n.position.x,-9,n.position.z)]);
+    const ln = new THREE.Line(lg, new THREE.LineDashedMaterial({color:COL.accent2, dashSize:0.3, gapSize:0.2, transparent:true, opacity:0.22}));
+    ln.computeLineDistances();
+    g.add(ln);
+  });
+  return g;
+}
+
+function makeDataFlow(from, to, color=COL.accent){
+  const g = new THREE.Group();
+  for(let i=0;i<4;i++){
+    const p = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08,6,6),
+      new THREE.MeshBasicMaterial({color, transparent:true, opacity:0.85})
+    );
+    p.userData = {from:from.clone(), to:to.clone(), t:i/4};
+    g.add(p);
+  }
+  g.userData.isFlow = true;
+  return g;
+}
+
+// Sprite labels — 高对比深色徽标, 清晰无衬线
+function addLabel(parent, text, x,y,z, color=0x22d3ee){
+  const cnv = document.createElement("canvas");
+  cnv.width=512; cnv.height=128;
+  const ctx = cnv.getContext("2d");
+  const hex = "#" + color.toString(16).padStart(6,"0");
+  // 深色玻璃底 + 彩色描边
+  ctx.fillStyle = "rgba(10,18,30,0.86)";
+  roundRect(ctx, 4, 4, 504, 120, 16); ctx.fill();
+  ctx.strokeStyle = hex; ctx.lineWidth=3;
+  roundRect(ctx, 4, 4, 504, 120, 16); ctx.stroke();
+  // 左侧色条
+  ctx.fillStyle = hex; roundRect(ctx, 14, 22, 8, 84, 4); ctx.fill();
+  // 文字 — 粗体无衬线, 亮色高对比
+  ctx.fillStyle = "#f0f6ff";
+  ctx.font = "700 40px 'Inter','Noto Sans SC',system-ui,sans-serif";
+  ctx.textAlign="left"; ctx.textBaseline="middle";
+  ctx.shadowColor = hex; ctx.shadowBlur = 12;
+  ctx.fillText(text, 38, 66);
+  const tex = new THREE.CanvasTexture(cnv); tex.anisotropy = 8;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  spr.scale.set(3.0,0.75,1); spr.position.set(x,y,z);
+  spr.userData.isLabel = true;
+  spr.renderOrder = 999;
+  parent.add(spr);
+  return spr;
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+
+
+// ===========================================================
+// 5 个 AHS Agentrix 城市生命线数字孪生场景 · 时空本体 + Agent OS 深度推理
+// ===========================================================
+
+// 公用: 运维人员
+function makePassenger(color=0xc2410c){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.08, 0.1, 0.4, 6),
+    new THREE.MeshLambertMaterial({color})
+  );
+  body.position.y = 0.2; g.add(body);
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.08, 8, 6),
+    new THREE.MeshLambertMaterial({color:0xebe3d3})
+  );
+  head.position.y = 0.48; g.add(head);
+  const hat = new THREE.Mesh(
+    new THREE.SphereGeometry(0.1, 12, 8, 0, Math.PI*2, 0, Math.PI/2),
+    new THREE.MeshLambertMaterial({color:COL.accent5})
+  );
+  hat.position.y = 0.55; g.add(hat);
+  return g;
+}
+
+// 公用: 城市路网网格 (灰色道路 + 街区方块)
+function makeCityGrid(g, size=24, spacing=4, blockColor=0xebe3d3){
+  const half = size/2;
+  // 道路 (横竖)
+  for(let p=-half; p<=half; p+=spacing){
+    const roadH = new THREE.Mesh(
+      new THREE.PlaneGeometry(size, 0.5),
+      new THREE.MeshBasicMaterial({color:0x7a6e63, transparent:true, opacity:0.5})
+    );
+    roadH.rotation.x = -Math.PI/2; roadH.position.set(0, 0.02, p); g.add(roadH);
+    const roadV = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.5, size),
+      new THREE.MeshBasicMaterial({color:0x7a6e63, transparent:true, opacity:0.5})
+    );
+    roadV.rotation.x = -Math.PI/2; roadV.position.set(p, 0.02, 0); g.add(roadV);
+  }
+  // 街区小楼 (稀疏)
+  for(let x=-half+2; x<half; x+=spacing){
+    for(let z=-half+2; z<half; z+=spacing){
+      if(Math.random() < 0.5) continue;
+      const h = 0.4 + Math.random()*0.8;
+      const blk = new THREE.Mesh(
+        new THREE.BoxGeometry(1.6, h, 1.6),
+        new THREE.MeshLambertMaterial({color:blockColor, transparent:true, opacity:0.45})
+      );
+      blk.position.set(x, h/2, z); g.add(blk);
+    }
+  }
+}
+
+// 公用: 管线 (彩色细管, 任意两点)
+function makePipe(x1, y1, z1, x2, y2, z2, color, radius=0.06){
+  const start = new THREE.Vector3(x1, y1, z1);
+  const end = new THREE.Vector3(x2, y2, z2);
+  const dir = end.clone().sub(start);
+  const length = dir.length();
+  const mid = start.clone().add(end).multiplyScalar(0.5);
+  const pipe = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius, radius, length, 8),
+    new THREE.MeshLambertMaterial({color})
+  );
+  pipe.position.copy(mid);
+  pipe.lookAt(end);
+  pipe.rotateX(Math.PI/2);
+  return pipe;
+}
+
+// =====================================================================
+// ① water 供水管网 · 城市地下供水管线 + DMA + 爆管喷水
+// =====================================================================
+function buildManufacturing(){
+  const g = new THREE.Group();
+
+  // 底盘 (地表)
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(28, 18),
+    new THREE.MeshLambertMaterial({color:COL.paper2})
+  );
+  plate.rotation.x = -Math.PI/2; plate.position.y = 0.005; g.add(plate);
+
+  // 城市路网
+  makeCityGrid(g, 24, 4);
+
+  // ===== 地下供水管网 (蓝色管线, 在地表下 y<0) =====
+  const pipeY = -0.8;
+  // 主管网节点 (DMA 计量分区)
+  const nodes = [
+    {id:"G2840", x:0,   z:0,   fault:true},   // 爆管点
+    {id:"N1", x:-8, z:-5, fault:false},
+    {id:"N2", x:-4, z:4,  fault:false},
+    {id:"N3", x:5,  z:-4, fault:false},
+    {id:"N4", x:8,  z:3,  fault:false},
+    {id:"N5", x:-9, z:2,  fault:false},
+    {id:"N6", x:4,  z:5,  fault:false},
+    {id:"N7", x:9,  z:-2, fault:false},
+  ];
+  // 管线连接
+  const pipeConn = [[0,1],[0,2],[0,3],[0,4],[1,5],[2,5],[3,7],[4,6],[2,6],[3,4]];
+  pipeConn.forEach(([a,b])=>{
+    const na = nodes[a], nb = nodes[b];
+    const isFaultPipe = (a===0 || b===0);
+    const pipe = makePipe(na.x, pipeY, na.z, nb.x, pipeY, nb.z, isFaultPipe?COL.warn:COL.accent2, 0.08);
+    g.add(pipe);
+    // 管内流动光点
+    for(let k=0; k<2; k++){
+      const flow = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 8, 8),
+        new THREE.MeshBasicMaterial({color:isFaultPipe?COL.warn:COL.cyan || COL.accent3})
+      );
+      flow.userData = {
+        isPipeFlow: true,
+        from: new THREE.Vector3(na.x, pipeY, na.z),
+        to:   new THREE.Vector3(nb.x, pipeY, nb.z),
+        phase: k*0.5, speed: 0.35
+      };
+      g.add(flow);
+    }
+  });
+  // 节点阀门 (圆柱)
+  nodes.forEach(n=>{
+    const valve = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.2, 0.3, 12),
+      new THREE.MeshLambertMaterial({color: n.fault ? COL.warn : COL.accent2})
+    );
+    valve.position.set(n.x, pipeY, n.z); g.add(valve);
+    // 阀门到地表的竖管 (检修井)
+    const riser = makePipe(n.x, pipeY, n.z, n.x, 0.1, n.z, 0x7a6e63, 0.04);
+    g.add(riser);
+    // 地表井盖
+    const cover = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.22, 0.05, 12),
+      new THREE.MeshLambertMaterial({color: n.fault ? COL.warn : 0x4a413a})
+    );
+    cover.position.set(n.x, 0.06, n.z); g.add(cover);
+  });
+
+  // ===== DMA 分区边界 (半透明区域) =====
+  const dma = new THREE.Mesh(
+    new THREE.CircleGeometry(5, 32),
+    new THREE.MeshBasicMaterial({color:COL.accent2, transparent:true, opacity:0.08, side:THREE.DoubleSide})
+  );
+  dma.rotation.x = -Math.PI/2; dma.position.set(0, 0.03, 0); g.add(dma);
+  const dmaRing = new THREE.Mesh(
+    new THREE.RingGeometry(4.95, 5, 48),
+    new THREE.MeshBasicMaterial({color:COL.accent2, transparent:true, opacity:0.4, side:THREE.DoubleSide})
+  );
+  dmaRing.rotation.x = -Math.PI/2; dmaRing.position.set(0, 0.04, 0); g.add(dmaRing);
+  addLabel(g, "DMA-07 计量分区", -4, 0.05, -5.2, COL.accent2);
+
+  // ===== 爆管喷水点 (地表喷泉效果) =====
+  const burstX = 0, burstZ = 0;
+  // 喷水柱粒子 (向上喷射的水珠)
+  for(let i=0; i<12; i++){
+    const drop = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08, 6, 6),
+      new THREE.MeshBasicMaterial({color:0x6ca5b8, transparent:true, opacity:0.8})
+    );
+    drop.userData = {
+      isWaterJet: true,
+      baseX: burstX, baseZ: burstZ,
+      angle: (i/12)*Math.PI*2,
+      spread: 0.3 + Math.random()*0.6,
+      phase: i*0.18,
+      maxH: 1.5 + Math.random()*1.0,
+      speed: 0.7 + Math.random()*0.4
+    };
+    g.add(drop);
+  }
+  // 地面积水 (扩散圈)
+  const puddle = new THREE.Mesh(
+    new THREE.CircleGeometry(1.5, 32),
+    new THREE.MeshBasicMaterial({color:0x6ca5b8, transparent:true, opacity:0.5, side:THREE.DoubleSide})
+  );
+  puddle.rotation.x = -Math.PI/2; puddle.position.set(burstX, 0.05, burstZ); g.add(puddle);
+
+  // 压力波扩散环 (从爆管点向管网扩散 — 表征水锤/压降传播)
+  for(let i=0;i<3;i++){
+    const pressureWave = new THREE.Mesh(
+      new THREE.RingGeometry(0.3, 0.36, 32),
+      new THREE.MeshBasicMaterial({color:COL.warn, transparent:true, opacity:0.55, side:THREE.DoubleSide})
+    );
+    pressureWave.rotation.x = -Math.PI/2;
+    pressureWave.position.set(burstX, 0.08, burstZ);
+    pressureWave.userData = {phase: i*0.7, isPulse:true};
+    g.add(pressureWave);
+  }
+  // 关阀动画环 (两个待关阀门上的旋转指示环)
+  [[-4, 4], [5, -4]].forEach(([vx, vz])=>{
+    const closeRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.35, 0.05, 8, 24),
+      new THREE.MeshBasicMaterial({color:COL.ok, transparent:true, opacity:0.85})
+    );
+    closeRing.rotation.x = Math.PI/2;
+    closeRing.position.set(vx, 0.4, vz);
+    closeRing.userData = {isOCCBeacon:true, rotateSpeed:2.5};
+    g.add(closeRing);
+    addLabel(g, "关阀中", vx, 0.95, vz, COL.ok);
+  });
+
+  // ===== 泵站 (左侧) =====
+  const pumpHouse = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 1.4, 2.2),
+    new THREE.MeshLambertMaterial({color:0xebe3d3})
+  );
+  pumpHouse.position.set(-11, 0.7, -6); g.add(pumpHouse);
+  const pumpRoof = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 0.1, 2.2),
+    new THREE.MeshLambertMaterial({color:COL.accent2})
+  );
+  pumpRoof.position.set(-11, 1.45, -6); g.add(pumpRoof);
+  addLabel(g, "#3 增压泵站", -11, 2.0, -6, COL.ink);
+  g.add(makePipe(-11, pipeY, -6, -9, pipeY, 2, COL.accent2, 0.1));
+
+  // ===== 抢修车 + 人员 =====
+  const repairTruck = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 0.5, 0.5),
+    new THREE.MeshLambertMaterial({color:COL.warn})
+  );
+  repairTruck.position.set(-2, 0.3, 2); g.add(repairTruck);
+  const worker = makePassenger(COL.accent4);
+  worker.position.set(-1, 0.05, 1.5); g.add(worker);
+  addLabel(g, "抢修队", -1.5, 0.95, 1.8, COL.accent4);
+
+  // ===== 仪表悬浮卡 (压力/流量) =====
+  const dashY = 4;
+  const dashboards = [
+    {x:-3, label:"管网压力", val:"0.18 MPa ↓", c:COL.warn},
+    {x: 3, label:"瞬时流量", val:"+1.6× ↑", c:COL.warn},
+  ];
+  dashboards.forEach(d=>{
+    const card = makeBlock(1.8, 0.9, 0.06, 0xebe3d3, false);
+    card.position.set(d.x, dashY, -2); g.add(card);
+    addLabel(g, d.label, d.x, dashY+0.25, -1.95, COL.ink);
+    addLabel(g, d.val,   d.x, dashY-0.15, -1.95, d.c);
+  });
+
+  // 异常告警
+  const anom = makePulse(COL.warn);
+  anom.position.set(0, 3.2, 0); g.add(anom);
+
+  // 本体图谱
+  const ontPos = [];
+  for(let i=0; i<14; i++){
+    const a = (i/14)*Math.PI*2;
+    ontPos.push([Math.cos(a)*5, 6.5+Math.random()*1.2, Math.sin(a)*3]);
+  }
+  const ontCon = [];
+  for(let i=0; i<14; i++) ontCon.push([i,(i+1)%14]);
+  for(let i=0; i<7; i++) ontCon.push([i,(i+5)%14]);
+  g.add(makeOntologyLayer(ontPos, ontCon));
+
+  g.add(makeDataFlow(new THREE.Vector3(0,12,0), new THREE.Vector3(0, 3.2, 0)));
+
+  addLabel(g, "DN400 爆管 · 压降 0.18MPa", 0, 3.8, 0, COL.warn);
+
+  return g;
+}
+
+// =====================================================================
+// ② power 城市配电网 · 变电站 + 馈线 + 开关 + 故障自愈
+// =====================================================================
+function buildMaintenance(){
+  const g = new THREE.Group();
+
+  // 底盘
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(28, 18),
+    new THREE.MeshLambertMaterial({color:COL.paper2})
+  );
+  plate.rotation.x = -Math.PI/2; plate.position.y = 0.005; g.add(plate);
+  makeCityGrid(g, 24, 6, 0xebe3d3);
+
+  // ===== 变电站 (左侧, 主电源) =====
+  const subX = -11, subZ = 0;
+  const subBase = makeBlock(3, 0.3, 3, COL.paper);
+  subBase.position.set(subX, 0.15, subZ); g.add(subBase);
+  // 变压器 (2 个大方块)
+  [-0.7, 0.7].forEach(dz=>{
+    const trafo = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1.2, 0.8),
+      new THREE.MeshLambertMaterial({color:COL.accent5})
+    );
+    trafo.position.set(subX, 0.9, subZ + dz); g.add(trafo);
+    // 套管 (顶部 3 个小柱)
+    for(let i=0; i<3; i++){
+      const bushing = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.06, 0.06, 0.4, 8),
+        new THREE.MeshLambertMaterial({color:0xebe3d3})
+      );
+      bushing.position.set(subX - 0.3 + i*0.3, 1.7, subZ + dz); g.add(bushing);
+    }
+  });
+  // 龙门架
+  const gantry = makeBlock(2.4, 0.1, 0.1, 0x4a413a);
+  gantry.position.set(subX, 2.2, subZ); g.add(gantry);
+  addLabel(g, "110kV 变电站", subX, 2.6, subZ, COL.ink);
+
+  // ===== 馈线拓扑 (从变电站辐射出的线路 + 杆塔) =====
+  const feederNodes = [
+    {id:"S01", x:-6, z:-4}, {id:"S03", x:-2, z:-5},
+    {id:"S05", x:2,  z:-4}, {id:"S07", x:4,  z:2, fault:true},  // 故障开关
+    {id:"S09", x:7,  z:3},  {id:"S11", x:9,  z:-3},
+    {id:"S02", x:-5, z:4},  {id:"S04", x:0,  z:5},
+  ];
+  // 杆塔 + 开关
+  feederNodes.forEach(n=>{
+    // 杆塔 (细高柱)
+    const pole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.09, 1.8, 8),
+      new THREE.MeshLambertMaterial({color:0x7a6e63})
+    );
+    pole.position.set(n.x, 0.9, n.z); g.add(pole);
+    // 横担
+    const arm = makeBlock(0.7, 0.06, 0.06, 0x4a413a);
+    arm.position.set(n.x, 1.7, n.z); g.add(arm);
+    // 开关箱 (DTU/FTU)
+    const sw = new THREE.Mesh(
+      new THREE.BoxGeometry(0.3, 0.4, 0.25),
+      new THREE.MeshLambertMaterial({color: n.fault ? COL.warn : COL.accent3})
+    );
+    sw.position.set(n.x, 1.0, n.z + 0.2); g.add(sw);
+    addLabel(g, n.id, n.x, 2.0, n.z, n.fault ? COL.warn : COL.ink);
+    // 故障开关红色脉冲
+    if(n.fault){
+      const fa = makePulse(COL.warn);
+      fa.position.set(n.x, 2.5, n.z); g.add(fa);
+      // 电弧火花粒子 (从开关位置炸开的短促小亮点)
+      for(let sp=0; sp<8; sp++){
+        const spark = new THREE.Mesh(
+          new THREE.SphereGeometry(0.04, 6, 6),
+          new THREE.MeshBasicMaterial({color:0xffe7b9, transparent:true, opacity:0.9})
+        );
+        spark.userData = {
+          isSpark: true,
+          baseX: n.x, baseY: 1.0, baseZ: n.z + 0.2,
+          angle: (sp/8)*Math.PI*2,
+          spread: 0.4 + Math.random()*0.3,
+          phase: sp*0.12,
+          maxH: 0.5 + Math.random()*0.4,
+          speed: 1.6 + Math.random()*0.8
+        };
+        spark.position.set(n.x, 1.0, n.z+0.2);
+        g.add(spark);
+      }
+    }
+  });
+
+  // 架空线路 (变电站 → 馈线节点, 悬链线)
+  const lineFrom = [{x:subX+1.5, z:subZ}, ...feederNodes];
+  const lineConn = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[1,7],[7,8]];
+  lineConn.forEach(([a,b])=>{
+    const na = a===0 ? {x:subX+1.5, z:subZ} : feederNodes[a-1];
+    const nb = feederNodes[b-1];
+    if(!na || !nb) return;
+    // 三相线 (3 条略微分开)
+    [-0.1, 0, 0.1].forEach(off=>{
+      const isFaultLine = (feederNodes[a-1]?.fault || nb.fault);
+      const wire = makePipe(na.x, 1.7, na.z+off, nb.x, 1.7, nb.z+off, isFaultLine?COL.warn:COL.accent4, 0.02);
+      g.add(wire);
+    });
+  });
+
+  // ===== 联络开关 (转供路径, 绿色高亮) =====
+  const tieX = 7, tieZ = 3;
+  const tie = new THREE.Mesh(
+    new THREE.BoxGeometry(0.35, 0.45, 0.3),
+    new THREE.MeshLambertMaterial({color:COL.ok})
+  );
+  tie.position.set(tieX, 1.2, tieZ + 0.3); g.add(tie);
+  addLabel(g, "联络开关 T-03 (转供)", tieX, 2.5, tieZ, COL.ok);
+  // 转供路径绿色流光
+  g.add(makeDataFlow(
+    new THREE.Vector3(tieX, 1.7, tieZ),
+    new THREE.Vector3(9, 1.7, -3),
+    COL.ok
+  ));
+
+  // ===== 台区 (负荷, 小房子带电表) =====
+  [[-3,-2],[1,3],[6,-1]].forEach(([tx,tz], i)=>{
+    const house = makeBlock(0.9, 0.7, 0.9, 0xebe3d3);
+    house.position.set(tx, 0.35, tz); g.add(house);
+    addLabel(g, `台区${i+1}`, tx, 1.0, tz, 0x7a6e63);
+  });
+
+  // 异常告警
+  const anom = makePulse(COL.warn);
+  anom.position.set(2.5, 3.2, 2); g.add(anom);
+
+  // 仪表卡
+  const card = makeBlock(2, 1, 0.06, 0xebe3d3, false);
+  card.position.set(0, 4.2, -3); g.add(card);
+  addLabel(g, "故障电流 8.4kA", 0, 4.45, -2.95, COL.warn);
+  addLabel(g, "FLISR 自愈 42s", 0, 4.05, -2.95, COL.ok);
+
+  // 本体图谱
+  const ontPos = [];
+  for(let i=0; i<12; i++){
+    const a = (i/12)*Math.PI*2;
+    ontPos.push([Math.cos(a)*5, 7+Math.sin(a*2)*0.6, Math.sin(a)*3]);
+  }
+  const ontCon = [];
+  for(let i=0; i<12; i++) ontCon.push([i,(i+1)%12]);
+  for(let i=0; i<6; i++) ontCon.push([i,(i+5)%12]);
+  g.add(makeOntologyLayer(ontPos, ontCon));
+
+  g.add(makeDataFlow(new THREE.Vector3(0,12,0), new THREE.Vector3(2.5, 3.2, 2)));
+
+  addLabel(g, "10kV 馈线-12 过流跳闸", 2.5, 3.8, 2, COL.warn);
+
+  return g;
+}
+
+// =====================================================================
+// ③ rail 交通·轨道调度 · 线网 + 车站 + 运行列车 + 客流热力 + 换乘拥挤
+// =====================================================================
+function buildRetail(){
+  const g = new THREE.Group();
+
+  // 底盘 (城市地表, 深色科技底)
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(30, 20),
+    new THREE.MeshLambertMaterial({color:COL.paper})
+  );
+  plate.rotation.x = -Math.PI/2; plate.position.y = 0.005; g.add(plate);
+  // 发光网格地坪
+  const grid = new THREE.GridHelper(30, 30, COL.accent2, 0x16273b);
+  grid.position.y = 0.02; grid.material.transparent = true; grid.material.opacity = 0.25;
+  g.add(grid);
+
+  // ===== 两条地铁线 (Line 2 横向, Line 5 斜向) 在 T3 交汇 =====
+  const lineY = 0.15;
+  const L2 = {color:0x3b82f6, pts:[]}; // 蓝线 横向
+  const L5 = {color:0xf59e0b, pts:[]}; // 橙线 斜向
+  // Line2 路径点 (横向微波浪)
+  for(let x=-13; x<=13; x+=0.5){ L2.pts.push(new THREE.Vector3(x, lineY, Math.sin(x*0.18)*1.6)); }
+  // Line5 路径点 (斜向穿过中心 T3)
+  for(let t=-13; t<=13; t+=0.5){ L5.pts.push(new THREE.Vector3(t*0.85, lineY, t*0.8 + Math.cos(t*0.2)*0.8)); }
+
+  function drawLine(lineObj, tube=0.12){
+    const curve = new THREE.CatmullRomCurve3(lineObj.pts);
+    const geo = new THREE.TubeGeometry(curve, 120, tube, 8, false);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color:lineObj.color}));
+    g.add(mesh);
+    // 轨道发光底光带
+    const glowGeo = new THREE.TubeGeometry(curve, 120, tube*2.4, 8, false);
+    const glow = new THREE.Mesh(glowGeo, new THREE.MeshBasicMaterial({color:lineObj.color, transparent:true, opacity:0.12}));
+    g.add(glow);
+    lineObj.curve = curve;
+  }
+  drawLine(L2); drawLine(L5);
+
+  // ===== 车站节点 (沿线分布) =====
+  const stations = [
+    {line:L2, u:0.15, name:"A"}, {line:L2, u:0.38, name:"B"},
+    {line:L2, u:0.62, name:"D"}, {line:L2, u:0.85, name:"E"},
+    {line:L5, u:0.20, name:"P"}, {line:L5, u:0.78, name:"Q"},
+  ];
+  stations.forEach(st=>{
+    const pos = st.line.curve.getPointAt(st.u);
+    const pillar = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.28, 0.5, 8),
+      new THREE.MeshLambertMaterial({color:0x1e293b})
+    );
+    pillar.position.set(pos.x, 0.25, pos.z); g.add(pillar);
+    const cap = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.34, 0.34, 0.1, 12),
+      new THREE.MeshBasicMaterial({color:st.line.color})
+    );
+    cap.position.set(pos.x, 0.52, pos.z); g.add(cap);
+  });
+
+  // ===== 换乘站 T3 (中心, 大客流告警点) =====
+  const T3 = new THREE.Vector3(0, 0, 0);
+  // 站体 (两层结构: 站厅 + 月台)
+  const hall = new THREE.Mesh(
+    new THREE.BoxGeometry(3.4, 0.7, 3.4),
+    new THREE.MeshLambertMaterial({color:0x1e293b, transparent:true, opacity:0.9})
+  );
+  hall.position.set(0, 0.55, 0); g.add(hall);
+  const hallEdge = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(3.4,0.7,3.4)),
+    new THREE.LineBasicMaterial({color:COL.warn})
+  );
+  hallEdge.position.set(0,0.55,0); g.add(hallEdge);
+  // 站顶穹盖
+  const dome = new THREE.Mesh(
+    new THREE.SphereGeometry(2.0, 20, 10, 0, Math.PI*2, 0, Math.PI/2.4),
+    new THREE.MeshBasicMaterial({color:COL.warn, wireframe:true, transparent:true, opacity:0.3})
+  );
+  dome.position.set(0, 0.9, 0); g.add(dome);
+
+  // ===== 客流热力 (T3 周边密集发光人群, 红色超阈值) =====
+  // 高密度人流粒子环绕 T3
+  for(let i=0; i<60; i++){
+    const a = Math.random()*Math.PI*2;
+    const r = 0.6 + Math.random()*2.6;
+    const ped = new THREE.Mesh(
+      new THREE.SphereGeometry(0.07, 6, 6),
+      new THREE.MeshBasicMaterial({color: r<1.8 ? COL.warn : COL.accent4})
+    );
+    ped.userData = {
+      isCrowd: true, cx:0, cz:0, baseR:r, angle:a,
+      speed:(0.15+Math.random()*0.35)*(r<1.8?1.6:1),
+      bob:Math.random()*Math.PI*2
+    };
+    ped.position.set(Math.cos(a)*r, 0.95, Math.sin(a)*r);
+    g.add(ped);
+  }
+  // 客流密度热力圈 (红色脉动, 表征超阈值)
+  for(let k=0;k<3;k++){
+    const heat = new THREE.Mesh(
+      new THREE.RingGeometry(0.4+k*0.7, 0.66+k*0.7, 40),
+      new THREE.MeshBasicMaterial({color:COL.warn, transparent:true, opacity:0.22-k*0.05, side:THREE.DoubleSide})
+    );
+    heat.rotation.x = -Math.PI/2; heat.position.set(0, 0.92, 0);
+    heat.userData = {isPulseRing:true, phase:k*0.6};
+    g.add(heat);
+  }
+  addLabel(g, "换乘站 T3 · 5.6人/㎡", 0, 2.6, 0, COL.warn);
+
+  // ===== 运行的列车 (沿曲线移动, 多节车厢) =====
+  function makeTrain(lineObj, color, u0, speed, cars=3){
+    const train = new THREE.Group();
+    for(let c=0;c<cars;c++){
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(0.85, 0.32, 0.34),
+        new THREE.MeshLambertMaterial({color})
+      );
+      const carEdge = new THREE.LineSegments(
+        new THREE.EdgesGeometry(body.geometry),
+        new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:0.5})
+      );
+      const car = new THREE.Group(); car.add(body); car.add(carEdge);
+      // 车头灯
+      if(c===0){
+        const light = new THREE.Mesh(new THREE.SphereGeometry(0.06,6,6), new THREE.MeshBasicMaterial({color:0xffffff}));
+        light.position.x = 0.45; car.add(light);
+      }
+      car.userData.carIndex = c;
+      train.add(car);
+    }
+    train.userData = {isTrain:true, curve:lineObj.curve, u:u0, speed, cars, gap:0.028};
+    g.add(train);
+    return train;
+  }
+  makeTrain(L2, 0x60a5fa, 0.1, 0.035, 3);
+  makeTrain(L2, 0x60a5fa, 0.55, 0.035, 3);
+  makeTrain(L5, 0xfbbf24, 0.3, 0.030, 3);
+  // 新加开的列车 (绿色, 表征 Agent 决策加开)
+  const addedTrain = makeTrain(L5, COL.ok, 0.62, 0.045, 4);
+  addLabel(g, "Agent 加开备车 ↑", -7, 1.3, 6, COL.ok);
+
+  // ===== 限流闸机 (T3 入口, 黄色闸门) =====
+  for(let i=0;i<3;i++){
+    const gate = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.5, 0.4),
+      new THREE.MeshLambertMaterial({color:COL.accent4})
+    );
+    gate.position.set(-2.2, 0.9, -0.6+i*0.6); g.add(gate);
+  }
+  addLabel(g, "闸机限流 70%", -3.6, 1.5, 0, COL.accent4);
+
+  // 异常告警
+  const anom = makePulse(COL.warn);
+  anom.position.set(0, 3.5, 0); g.add(anom);
+
+  // ===== 本体图谱 (上方) =====
+  const ontPos = [];
+  for(let i=0;i<14;i++){
+    const a = (i/14)*Math.PI*2;
+    ontPos.push([Math.cos(a)*5, 7.5+Math.sin(a*2)*0.8, Math.sin(a)*3.4]);
+  }
+  const ontCon = [];
+  for(let i=0;i<14;i++) ontCon.push([i,(i+1)%14]);
+  for(let i=0;i<7;i++) ontCon.push([i,(i+5)%14]);
+  g.add(makeOntologyLayer(ontPos, ontCon));
+  g.add(makeDataFlow(new THREE.Vector3(0,12,0), new THREE.Vector3(0, 3.5, 0)));
+
+  addLabel(g, "T3 大客流 · 加开列车 + 限流疏导", 0, 4.2, 0, COL.warn);
+
+  return g;
+}
+
+// =====================================================================
+// ④ drainage 排水防涝 · 城市地形 + 雨水管网 + 立交积水 + 泵站
+// =====================================================================
+function buildFinance(){
+  const g = new THREE.Group();
+
+  // 底盘
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(28, 18),
+    new THREE.MeshLambertMaterial({color:COL.paper2})
+  );
+  plate.rotation.x = -Math.PI/2; plate.position.y = 0.005; g.add(plate);
+  makeCityGrid(g, 24, 5, 0xebe3d3);
+
+  // ===== 立交桥 (中央, 下凹积水点 J3) =====
+  const jX = 0, jZ = 0;
+  // 立交桥面 (拱形)
+  const bridgeDeck = new THREE.Mesh(
+    new THREE.TorusGeometry(2.5, 0.25, 8, 24, Math.PI),
+    new THREE.MeshLambertMaterial({color:0xebe3d3})
+  );
+  bridgeDeck.position.set(jX, 0.1, jZ);
+  bridgeDeck.rotation.y = Math.PI/2;
+  g.add(bridgeDeck);
+  // 下凹路面 (积水区)
+  const lowRoad = new THREE.Mesh(
+    new THREE.CircleGeometry(2, 32),
+    new THREE.MeshBasicMaterial({color:0x4a413a})
+  );
+  lowRoad.rotation.x = -Math.PI/2; lowRoad.position.set(jX, 0.03, jZ); g.add(lowRoad);
+  // 积水 (蓝色面, 会脉动上涨)
+  const flood = new THREE.Mesh(
+    new THREE.CircleGeometry(1.8, 32),
+    new THREE.MeshBasicMaterial({color:0x6ca5b8, transparent:true, opacity:0.65, side:THREE.DoubleSide})
+  );
+  flood.rotation.x = -Math.PI/2; flood.position.set(jX, 0.12, jZ);
+  flood.userData = {isFloodWater: true, baseY: 0.12};
+  g.add(flood);
+  addLabel(g, "立交桥 J3 · 积水 0.4m", jX, 1.4, jZ, COL.warn);
+
+  // ===== 地下雨水管网 (蓝色管, y<0) =====
+  const pipeY = -0.7;
+  const drainNodes = [
+    {x:0, z:0}, {x:-6, z:-4}, {x:5, z:-3}, {x:-5, z:4}, {x:6, z:4}, {x:-9, z:0}, {x:9, z:1}
+  ];
+  const drainConn = [[0,1],[0,2],[0,3],[0,4],[1,5],[2,6],[3,5],[4,6]];
+  drainConn.forEach(([a,b])=>{
+    const na = drainNodes[a], nb = drainNodes[b];
+    const pipe = makePipe(na.x, pipeY, na.z, nb.x, pipeY, nb.z, COL.accent2, 0.1);
+    g.add(pipe);
+    // 排水流光 (流向泵站)
+    const flow = new THREE.Mesh(
+      new THREE.SphereGeometry(0.1, 8, 8),
+      new THREE.MeshBasicMaterial({color:0x6ca5b8})
+    );
+    flow.userData = {
+      isPipeFlow: true,
+      from: new THREE.Vector3(na.x, pipeY, na.z),
+      to:   new THREE.Vector3(nb.x, pipeY, nb.z),
+      phase: 0, speed: 0.4
+    };
+    g.add(flow);
+    // 雨水井
+    [na, nb].forEach(n=>{
+      const manhole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.18, 0.05, 12),
+        new THREE.MeshLambertMaterial({color:0x4a413a})
+      );
+      manhole.position.set(n.x, 0.04, n.z); g.add(manhole);
+    });
+  });
+
+  // ===== 泵站 (右侧, 抢排) =====
+  const pumpX = 10, pumpZ = -4;
+  const pumpHouse = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 1.4, 2),
+    new THREE.MeshLambertMaterial({color:0xebe3d3})
+  );
+  pumpHouse.position.set(pumpX, 0.7, pumpZ); g.add(pumpHouse);
+  // 3 台泵 (圆柱, 旋转)
+  for(let p=0; p<3; p++){
+    const pump = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.25, 0.25, 0.5, 12),
+      new THREE.MeshLambertMaterial({color:COL.accent3})
+    );
+    pump.position.set(pumpX - 0.6 + p*0.6, 1.5, pumpZ); g.add(pump);
+    const impeller = new THREE.Group();
+    for(let b=0;b<4;b++){
+      const fin = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.03,0.08), new THREE.MeshLambertMaterial({color:0xebe3d3}));
+      fin.rotation.y = b*Math.PI/2; impeller.add(fin);
+    }
+    impeller.position.set(pumpX - 0.6 + p*0.6, 1.78, pumpZ);
+    impeller.userData = {isImpeller: true, phase: p*0.5};
+    g.add(impeller);
+  }
+  addLabel(g, "J3 排水泵站 (3 泵全开)", pumpX, 2.2, pumpZ, COL.accent3);
+  g.add(makePipe(pumpX, pipeY, pumpZ, 9, pipeY, 1, COL.accent2, 0.12));
+
+  // ===== 调蓄池 (左侧大圆筒) =====
+  const tankX = -10, tankZ = 4;
+  const storageTank = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.2, 1.2, 1, 24),
+    new THREE.MeshLambertMaterial({color:0xebe3d3, transparent:true, opacity:0.6})
+  );
+  storageTank.position.set(tankX, 0.5, tankZ); g.add(storageTank);
+  // 池内水
+  const tankWater = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.1, 1.1, 0.6, 24),
+    new THREE.MeshBasicMaterial({color:0x6ca5b8, transparent:true, opacity:0.6})
+  );
+  tankWater.position.set(tankX, 0.4, tankZ); g.add(tankWater);
+  addLabel(g, "调蓄池 (削峰)", tankX, 1.5, tankZ, COL.accent2);
+
+  // ===== 雨量云 (上方, 飘动 + 雨丝) =====
+  for(let c=0; c<3; c++){
+    const cloud = new THREE.Mesh(
+      new THREE.SphereGeometry(1.2, 12, 8),
+      new THREE.MeshBasicMaterial({color:0x7a6e63, transparent:true, opacity:0.4})
+    );
+    cloud.position.set(-4 + c*4, 5.5, 2);
+    cloud.scale.set(1.6, 0.7, 1.2);
+    g.add(cloud);
+    // 雨丝粒子
+    for(let r=0; r<5; r++){
+      const rain = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.015, 0.015, 0.3, 4),
+        new THREE.MeshBasicMaterial({color:0x6ca5b8, transparent:true, opacity:0.6})
+      );
+      rain.userData = {
+        isRain: true,
+        baseX: -4 + c*4 + (Math.random()-0.5)*2,
+        baseZ: 2 + (Math.random()-0.5)*2,
+        topY: 5.2, botY: 0.2,
+        phase: Math.random(), speed: 1.5 + Math.random()
+      };
+      g.add(rain);
+    }
+  }
+  addLabel(g, "强降雨 38mm/h", 0, 6.3, 2, COL.accent2);
+
+  // 异常告警
+  const anom = makePulse(COL.warn);
+  anom.position.set(0, 3.5, 0); g.add(anom);
+
+  // 本体图谱
+  const ontPos = [];
+  for(let i=0; i<14; i++){
+    const a = (i/14)*Math.PI*2;
+    ontPos.push([Math.cos(a)*5, 8+Math.sin(a*2)*0.6, Math.sin(a)*3]);
+  }
+  const ontCon = [];
+  for(let i=0; i<14; i++) ontCon.push([i,(i+1)%14]);
+  for(let i=0; i<7; i++) ontCon.push([i,(i+5)%14]);
+  g.add(makeOntologyLayer(ontPos, ontCon));
+
+  g.add(makeDataFlow(new THREE.Vector3(0,12,0), new THREE.Vector3(0, 3.5, 0)));
+
+  addLabel(g, "J3 内涝风险 · 30min 达警戒", 0, 4.0, 0, COL.warn);
+
+  return g;
+}
+
+// =====================================================================
+// ⑤ citysvc 城市服务·环卫人车 · 城市路网 + 垃圾房满溢 + 清运车 + 人车管理
+// =====================================================================
+function buildXBorder(){
+  const g = new THREE.Group();
+
+  // 底盘 + 发光网格
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(30, 22),
+    new THREE.MeshLambertMaterial({color:COL.paper})
+  );
+  plate.rotation.x = -Math.PI/2; plate.position.y = 0.005; g.add(plate);
+  const grid = new THREE.GridHelper(30, 24, COL.accent3, 0x16273b);
+  grid.position.y = 0.02; grid.material.transparent = true; grid.material.opacity = 0.22;
+  g.add(grid);
+
+  // ===== 城市街区楼宇 (低矮发光线框楼) =====
+  const blockPositions = [];
+  for(let x=-11; x<=11; x+=5.5){
+    for(let z=-8; z<=8; z+=5.5){
+      if(Math.abs(x)<2 && Math.abs(z)<2) continue; // 中心留给主路口
+      blockPositions.push([x + (Math.random()-0.5), z + (Math.random()-0.5)]);
+    }
+  }
+  blockPositions.forEach(([bx,bz])=>{
+    const h = 0.6 + Math.random()*1.6;
+    const bld = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, h, 2.2),
+      new THREE.MeshLambertMaterial({color:0x16273b, transparent:true, opacity:0.7})
+    );
+    bld.position.set(bx, h/2, bz); g.add(bld);
+    const e = new THREE.LineSegments(
+      new THREE.EdgesGeometry(bld.geometry),
+      new THREE.LineBasicMaterial({color:COL.accent2, transparent:true, opacity:0.35})
+    );
+    e.position.set(bx, h/2, bz); g.add(e);
+  });
+
+  // ===== 道路网 (发光主干道) =====
+  const roadMat = new THREE.MeshBasicMaterial({color:0x1e293b, transparent:true, opacity:0.85});
+  [[-8,30,0.9],[8,30,0.9]].forEach(()=>{});
+  // 横向主路 z=0, 纵向主路 x=0
+  const roadH = new THREE.Mesh(new THREE.PlaneGeometry(30,1.6), roadMat);
+  roadH.rotation.x=-Math.PI/2; roadH.position.set(0,0.03,0); g.add(roadH);
+  const roadV = new THREE.Mesh(new THREE.PlaneGeometry(1.6,22), roadMat);
+  roadV.rotation.x=-Math.PI/2; roadV.position.set(0,0.03,0); g.add(roadV);
+  // 道路中心黄线
+  [[30,0.08,0,0,0],[0.08,22,0,0,0]].forEach(([w,d])=>{
+    const ln = new THREE.Mesh(new THREE.PlaneGeometry(w,d), new THREE.MeshBasicMaterial({color:COL.accent4, transparent:true, opacity:0.6}));
+    ln.rotation.x=-Math.PI/2; ln.position.set(0,0.04,0); g.add(ln);
+  });
+
+  // ===== 垃圾房 (4 个, G-118 满溢告警) =====
+  const wasteRooms = [
+    {x:1.6, z:5.5, fill:0.92, name:"G-118", alert:true},
+    {x:-7,  z:3,   fill:0.55, name:"G-117"},
+    {x:7,   z:-4,  fill:0.40, name:"G-119"},
+    {x:-5,  z:-6,  fill:0.30, name:"G-120"},
+  ];
+  wasteRooms.forEach(wr=>{
+    const col = wr.alert ? COL.warn : (wr.fill>0.6?COL.accent4:COL.accent3);
+    // 房体
+    const house = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.9, 1.0),
+      new THREE.MeshLambertMaterial({color:0x1e293b})
+    );
+    house.position.set(wr.x, 0.45, wr.z); g.add(house);
+    const he = new THREE.LineSegments(new THREE.EdgesGeometry(house.geometry), new THREE.LineBasicMaterial({color:col}));
+    he.position.set(wr.x, 0.45, wr.z); g.add(he);
+    // 满溢度填充条 (房顶垂直柱, 高度=满溢度)
+    const fillBar = new THREE.Mesh(
+      new THREE.BoxGeometry(0.3, wr.fill*1.4, 0.3),
+      new THREE.MeshBasicMaterial({color:col})
+    );
+    fillBar.position.set(wr.x, 0.9 + wr.fill*0.7, wr.z); g.add(fillBar);
+    // 满溢告警:溢出粒子 + 脉冲
+    if(wr.alert){
+      for(let i=0;i<10;i++){
+        const trash = new THREE.Mesh(
+          new THREE.BoxGeometry(0.1,0.1,0.1),
+          new THREE.MeshBasicMaterial({color:COL.warn})
+        );
+        trash.userData = {
+          isWaterJet:true, baseX:wr.x, baseZ:wr.z,
+          angle:(i/10)*Math.PI*2, spread:0.5+Math.random()*0.3,
+          phase:i*0.15, maxH:0.8+Math.random()*0.5, speed:0.7+Math.random()*0.4
+        };
+        g.add(trash);
+      }
+      const pls = makePulse(COL.warn);
+      pls.position.set(wr.x, 2.0, wr.z); g.add(pls);
+    }
+    addLabel(g, wr.name+" · "+Math.round(wr.fill*100)+"%", wr.x, wr.alert?2.7:1.5, wr.z, col);
+  });
+
+  // ===== 清运车 (沿道路行驶, 派往 G-118) =====
+  function makeTruck(color){
+    const t = new THREE.Group();
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.5), new THREE.MeshLambertMaterial({color}));
+    cab.position.x=0.5; cab.position.y=0.25; t.add(cab);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.55,0.6), new THREE.MeshLambertMaterial({color:0x334155}));
+    box.position.x=-0.25; box.position.y=0.32; t.add(box);
+    const be = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), new THREE.LineBasicMaterial({color}));
+    be.position.copy(box.position); t.add(be);
+    // 车轮
+    [[-0.55,-0.22],[-0.55,0.22],[0.5,-0.22],[0.5,0.22]].forEach(([wx,wz])=>{
+      const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,0.08,10), new THREE.MeshLambertMaterial({color:0x0a1622}));
+      wheel.rotation.x=Math.PI/2; wheel.position.set(wx,0.1,wz); t.add(wheel);
+    });
+    return t;
+  }
+  // 派往 G-118 的清运车 (绿色, 沿路径行驶)
+  const truck = makeTruck(COL.ok);
+  truck.userData = {
+    isTruck:true,
+    path:[ new THREE.Vector3(-8,0.05,0), new THREE.Vector3(0,0.05,0), new THREE.Vector3(0,0.05,5), new THREE.Vector3(1.6,0.05,5.2) ],
+    t:0, speed:0.0016
+  };
+  g.add(truck);
+  addLabel(g, "清运车-07 就近派车 →", -8, 1.1, -1.5, COL.ok);
+  // 另外两辆常规清运车
+  const truck2 = makeTruck(COL.accent4);
+  truck2.userData = {isTruck:true, path:[new THREE.Vector3(8,0.05,8),new THREE.Vector3(8,0.05,-4),new THREE.Vector3(7,0.05,-4)], t:0.3, speed:0.0012};
+  g.add(truck2);
+
+  // ===== 环卫工人 (路面作业, 带定位光点) =====
+  const workers = [[-3,2],[4,3],[-6,-3],[2,-5]];
+  workers.forEach(([wx,wz],i)=>{
+    const w = makePassenger(i===0?COL.ok:COL.accent3);
+    w.scale.setScalar(0.8);
+    w.position.set(wx, 0.05, wz); g.add(w);
+    // 定位光环
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.28,0.34,20),
+      new THREE.MeshBasicMaterial({color:i===0?COL.ok:COL.accent3, transparent:true, opacity:0.5, side:THREE.DoubleSide})
+    );
+    ring.rotation.x=-Math.PI/2; ring.position.set(wx,0.06,wz);
+    ring.userData={isPulseRing:true, phase:i*0.5}; g.add(ring);
+  });
+  addLabel(g, "环卫工定位 · 人车管理", -3, 1.0, 2, COL.accent3);
+
+  // ===== 行驶的社会车辆 (人车管理, 道路上移动光点) =====
+  for(let i=0;i<6;i++){
+    const car = new THREE.Mesh(
+      new THREE.BoxGeometry(0.4,0.18,0.22),
+      new THREE.MeshBasicMaterial({color:i%2?COL.accent2:COL.accent})
+    );
+    const onH = Math.random()>0.5;
+    car.userData = {
+      isVehicle:true, onH,
+      pos:(Math.random()-0.5)*26, speed:(0.04+Math.random()*0.04)*(Math.random()>0.5?1:-1),
+      lane:(Math.random()>0.5?0.4:-0.4)
+    };
+    g.add(car);
+  }
+
+  // 异常告警 (G-118 上方)
+  const anom = makePulse(COL.warn);
+  anom.position.set(Math.cos(Math.PI*2/3)*8.5, 2.2, Math.sin(Math.PI*2/3)*8.5);
+  g.add(anom);
+
+  // ===== 本体图谱 (上方) =====
+  const ontPos = [];
+  for(let i=0;i<14;i++){
+    const a = (i/14)*Math.PI*2;
+    ontPos.push([Math.cos(a)*5.5, 7.5+Math.sin(a*2)*0.8, Math.sin(a)*3.6]);
+  }
+  const ontCon = [];
+  for(let i=0;i<14;i++) ontCon.push([i,(i+1)%14]);
+  for(let i=0;i<7;i++) ontCon.push([i,(i+5)%14]);
+  g.add(makeOntologyLayer(ontPos, ontCon));
+  g.add(makeDataFlow(new THREE.Vector3(0,12,0), new THREE.Vector3(1.6, 2.0, 5.5)));
+
+  addLabel(g, "G-118 满溢 · 派车 + 路径优化", 1.6, 4.0, 5.5, COL.warn);
+
+  return g;
+}
+
+const BUILDERS = { power:buildMaintenance, water:buildManufacturing, rail:buildRetail, finance:buildFinance, citysvc:buildXBorder };
+const ANOM_POS = {
+  // 故障开关 - 配电网
+  power:    new THREE.Vector3(2.5, 3.2, 2),
+  // 爆管点 - 供水管网中段
+  water:    new THREE.Vector3(0, 3.2, 0),
+  // 大客流换乘站
+  rail:     new THREE.Vector3(2.5, 3.5, 4),
+  // 欺诈团伙节点
+  finance:  new THREE.Vector3(0, 3.5, 0),
+  // 满溢垃圾房 / 人车冲突
+  citysvc:  new THREE.Vector3(Math.cos(Math.PI*2/3)*8.5, 2.2, Math.sin(Math.PI*2/3)*8.5),
+};
+
+// ===========================================================
+// Agent 扫描光锥(3D)
+// ===========================================================
+let agentRig = null;
+function buildAgentRig(){
+  const g = new THREE.Group();
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55, 0.18, 11, 16, 1, true),
+    new THREE.MeshBasicMaterial({color:0xc2410c, transparent:true, opacity:0.18, side:THREE.DoubleSide})
+  );
+  beam.position.y = 5.5; g.add(beam); g.userData.beam = beam;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.4,0.05,8,48), new THREE.MeshBasicMaterial({color:0xc2410c}));
+  ring.rotation.x = -Math.PI/2; g.add(ring); g.userData.ring = ring;
+  const inner = new THREE.Mesh(new THREE.TorusGeometry(0.85,0.03,8,36), new THREE.MeshBasicMaterial({color:0xc2410c, transparent:true, opacity:0.7}));
+  inner.rotation.x = -Math.PI/2; g.add(inner); g.userData.inner = inner;
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.28,16,16), new THREE.MeshBasicMaterial({color:0xc2410c}));
+  eye.position.y = 11; g.add(eye); g.userData.eye = eye;
+  const ripples = [];
+  for(let i=0;i<3;i++){
+    const r = new THREE.Mesh(new THREE.RingGeometry(0.5,0.55,48), new THREE.MeshBasicMaterial({color:0xc2410c, transparent:true, opacity:0.5, side:THREE.DoubleSide}));
+    r.rotation.x = -Math.PI/2; r.position.y = 0.05; r.userData = {phase:i*0.7};
+    g.add(r); ripples.push(r);
+  }
+  g.userData.ripples = ripples;
+  const sweepGeom = new THREE.BufferGeometry();
+  sweepGeom.setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(2.0,0,0)]);
+  const sweep = new THREE.Line(sweepGeom, new THREE.LineBasicMaterial({color:0xc2410c, transparent:true, opacity:0.7}));
+  sweep.rotation.x = -Math.PI/2; sweep.position.y = 0.06;
+  g.add(sweep); g.userData.sweep = sweep;
+  return g;
+}
+function setAgentRigPosition(key){
+  if(!agentRig) return;
+  const p = ANOM_POS[key];
+  if(p) agentRig.position.copy(p).setY(0);
+}
+function setAgentRigColor(hex){
+  if(!agentRig) return;
+  ["beam","ring","inner","eye","sweep"].forEach(k=>{
+    const m = agentRig.userData[k];
+    if(m && m.material) m.material.color.setHex(hex);
+  });
+  agentRig.userData.ripples.forEach(r=>r.material.color.setHex(hex));
+}
+
+// ===========================================================
+// 状态/UI 渲染
+// ===========================================================
+let currentKey = "power";
+let currentPhase = 0;
+let cycleIter = 1;
+
+function buildSidebarIndustries(){
+  const list = document.getElementById("industry-list");
+  list.innerHTML = "";
+  INDUSTRY_ORDER.forEach((k,i)=>{
+    const s = SCENES[k];
+    const el = document.createElement("div");
+    el.className = "industry" + (i===0?" active":"");
+    el.dataset.key = k;
+    el.innerHTML = `<div class="ind-icon">${ICONS[k]}</div>
+      <div><div class="ind-label">${s.label}</div><div class="ind-sub">${s.sub}</div></div>`;
+    el.onclick = ()=>switchScene(k);
+    list.appendChild(el);
+  });
+}
+
+function renderKPI(s){
+  const kr = document.getElementById("kpi-ribbon");
+  kr.innerHTML = "";
+  s.kpis.forEach(k=>{
+    const b = document.createElement("div");
+    b.className = "kpi-box";
+    // 纯数值型保持大字冲击;较长的状态文字自适应缩小
+    const longVal = /[\u4e00-\u9fa5]/.test(k.v) && k.v.length > 4;
+    const vStyle = longVal ? ' style="font-size:14px"' : '';
+    b.innerHTML = `<div class="kpi-k">${k.k}</div>
+      <div class="kpi-v"${vStyle}>${k.v}<span class="delta ${k.dir}">${k.d}</span></div>`;
+    kr.appendChild(b);
+  });
+}
+
+function renderArchMetrics(s){
+  document.getElementById("L1-rate").textContent  = s.archMetrics.rate;
+  document.getElementById("L2-nodes").textContent = s.archMetrics.nodes;
+  document.getElementById("L3-rules").textContent = s.archMetrics.rules;
+  document.getElementById("L4-fps").textContent   = s.archMetrics.fps;
+  document.getElementById("L5-ack").textContent   = s.archMetrics.ack;
+}
+
+function renderShacl(s){
+  const card = document.getElementById("shacl-card");
+  card.classList.toggle("fail", !s.shacl.ok);
+  document.getElementById("shacl-title").textContent = s.shacl.title;
+  document.getElementById("shacl-sub").textContent = s.shacl.sub;
+  card.querySelector(".shacl-icon").textContent = s.shacl.ok ? "✓" : "!";
+  document.getElementById("qa-shacl").textContent = s.shacl.ok ? "通过" : "失败";
+}
+
+function renderActions(s){
+  const ac = document.getElementById("actions");
+  const STATUS_ZH = {running:"执行中", done:"已完成", pending:"待执行"};
+  ac.innerHTML = "";
+  s.actions.forEach((a,i)=>{
+    const row = document.createElement("div");
+    row.className = "action-row";
+    row.dataset.idx = i;
+    row.innerHTML = `<div>
+        <div class="act-name">${a.n}</div>
+        <div class="act-meta">${a.m}</div>
+      </div>
+      <div class="act-status">
+        ${a.idem ? '<span class="status-dot idem" title="幂等"></span>' : ''}
+        <span class="status-dot ${a.s}"></span>${STATUS_ZH[a.s]||a.s}
+      </div>`;
+    ac.appendChild(row);
+  });
+  // writeback row
+  const wb = document.getElementById("writeback-row");
+  wb.innerHTML = '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:var(--ink-mute);width:100%;margin-bottom:2px;letter-spacing:.5px;">回写到外部业务系统:</div>';
+  s.writeback.forEach(name=>{
+    const tag = document.createElement("span");
+    tag.className = "wb-tag lit";
+    tag.innerHTML = `<span class="wb-dot"></span>${name}`;
+    wb.appendChild(tag);
+  });
+}
+
+function renderTuples(s){
+  const grid = document.getElementById("tuple-grid");
+  grid.innerHTML = "";
+  s.tuples.forEach((t,i)=>{
+    const row = document.createElement("div");
+    row.className = `tuple-row r${i+1}`;
+    row.innerHTML = `<div class="tuple-k">${t.k}</div><div class="tuple-v">${t.v}</div>`;
+    grid.appendChild(row);
+  });
+}
+
+function renderProv(s){
+  const chain = document.getElementById("prov-chain");
+  chain.innerHTML = "";
+  s.prov.forEach(n=>{
+    const node = document.createElement("div");
+    node.className = "prov-node";
+    node.dataset.kind = n.kind;
+    node.innerHTML = `<div class="prov-h"><span class="prov-kind">${n.k}</span><span class="prov-time">${n.t}</span></div>
+      <div class="prov-body">${n.b}</div>`;
+    chain.appendChild(node);
+  });
+}
+
+function renderOnto(s){
+  const code = document.getElementById("onto-code");
+  // Strategy: replace with unique placeholder tokens first, then escape HTML, then restore tokens
+  const TOK = {
+    open:  (cls)=>`§§OPEN_${cls}§§`,
+    close: "§§CLOSE§§"
+  };
+  let html = s.onto
+    .replace(/(@prefix\s+\w+:)/g, TOK.open("c-prefix") + "$1" + TOK.close)
+    .replace(/(\bowl:Class|owl:ObjectProperty|xsd:\w+)/g, TOK.open("c-class") + "$1" + TOK.close)
+    .replace(/(\bex:[A-Za-z_0-9]+\b)/g, TOK.open("c-prop") + "$1" + TOK.close)
+    .replace(/("[^"]*")/g, TOK.open("c-str") + "$1" + TOK.close);
+  // Escape HTML
+  html = html
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  // Restore tokens
+  html = html
+    .replace(/§§OPEN_([a-z-]+)§§/g, '<span class="$1">')
+    .replace(/§§CLOSE§§/g, '</span>');
+  code.innerHTML = html;
+}
+
+function renderMiniGraph(){
+  const svg = document.getElementById("mini-svg");
+  svg.innerHTML = "";
+  const NS = "http://www.w3.org/2000/svg";
+  const nodeCount = 14;
+  const nodes = [];
+  for(let i=0;i<nodeCount;i++){
+    nodes.push({
+      x: 20 + Math.random()*280,
+      y: 14 + Math.random()*92,
+      r: 3 + Math.random()*2
+    });
+  }
+  const edges = [];
+  for(let i=0;i<nodeCount;i++){
+    const n = Math.floor(Math.random()*2)+1;
+    for(let k=0;k<n;k++){
+      const j = Math.floor(Math.random()*nodeCount);
+      if(j!==i) edges.push([i,j]);
+    }
+  }
+  edges.forEach(([a,b])=>{
+    const ln = document.createElementNS(NS,"line");
+    ln.setAttribute("x1",nodes[a].x); ln.setAttribute("y1",nodes[a].y);
+    ln.setAttribute("x2",nodes[b].x); ln.setAttribute("y2",nodes[b].y);
+    ln.setAttribute("stroke","rgba(26,22,18,0.32)");
+    ln.setAttribute("stroke-width","0.6");
+    svg.appendChild(ln);
+  });
+  const colors = ["#c2410c","#1e6091","#4d7c0f","#a16207"];
+  nodes.forEach((n,i)=>{
+    const c = document.createElementNS(NS,"circle");
+    c.setAttribute("cx",n.x); c.setAttribute("cy",n.y); c.setAttribute("r",n.r);
+    c.setAttribute("fill", colors[i%4]);
+    c.setAttribute("stroke","#1a1612"); c.setAttribute("stroke-width","0.5");
+    svg.appendChild(c);
+  });
+  const ring = document.createElementNS(NS,"circle");
+  ring.setAttribute("cx",nodes[3].x); ring.setAttribute("cy",nodes[3].y);
+  ring.setAttribute("r", 9); ring.setAttribute("fill","none");
+  ring.setAttribute("stroke","#b91c1c"); ring.setAttribute("stroke-width","1");
+  ring.setAttribute("class","anom-ring");
+  ring.innerHTML = `<animate attributeName="r" from="6" to="14" dur="1.6s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" from="0.9" to="0" dur="1.6s" repeatCount="indefinite"/>`;
+  svg.appendChild(ring);
+}
+
+function updateGate(s){
+  const conf = Math.round(s.confidence*100);
+  document.getElementById("gate-v").textContent = conf + "%";
+  setTimeout(()=>{
+    document.getElementById("gate-fill").style.width = (s.confidence*100) + "%";
+  }, 100);
+  const pass = s.confidence >= 0.75;
+  document.getElementById("gate-pass").style.opacity = pass ? "1" : "0.35";
+  document.getElementById("gate-esc").style.opacity  = pass ? "0.35" : "1";
+}
+
+function updateAgentTasks(s){
+  for(let i=0;i<5;i++){
+    document.getElementById("agent-"+i+"-task").textContent = s.agentTasks[i];
+    document.getElementById("agent-"+i+"-lat").textContent  = s.agentLats[i];
+  }
+}
+
+function updatePanels(key){
+  const s = SCENES[key];
+  document.querySelectorAll(".industry").forEach(el=>{
+    el.classList.toggle("active", el.dataset.key===key);
+  });
+  document.getElementById("crumb-2").textContent = s.crumb;
+  document.getElementById("ns-now").textContent = s.ns;
+  document.getElementById("scene-tag").textContent = `场景 · ${s.code} / 05  ·  ${s.tag}`;
+  document.getElementById("scene-title").innerHTML = s.title;
+  document.getElementById("scene-sub").textContent = s.subtitle;
+
+  renderKPI(s);
+  renderArchMetrics(s);
+  renderShacl(s);
+  renderActions(s);
+  renderTuples(s);
+  renderProv(s);
+  renderOnto(s);
+  renderMiniGraph();
+  updateGate(s);
+  updateAgentTasks(s);
+}
+
+// ===========================================================
+// Agent 编排循环 (5 阶段)
+// ===========================================================
+const PHASE_DURATION_MS = 2400;
+const PHASE_COLORS = [0x1e6091, 0xa16207, 0xc2410c, 0x4d7c0f, 0x7c2d12];
+let phaseTimer = null;
+
+function setPhase(i){
+  currentPhase = i;
+  document.querySelectorAll(".agent-card").forEach((el,idx)=>{
+    el.classList.toggle("active", idx===i);
+    el.classList.toggle("completed", idx<i);
+  });
+  // light up corresponding architecture layer
+  document.querySelectorAll(".arch-layer").forEach((el,idx)=>{
+    // sense=L1, diagnose=L2/L3, plan=L3, exec=L5, audit=L2
+    const layerForPhase = [0, 1, 2, 4, 1][i];
+    el.classList.toggle("firing", idx===layerForPhase);
+  });
+  setAgentRigColor(PHASE_COLORS[i]);
+  // toast
+  const toastTexts = [
+    "① Observer 捕获事件 · SHACL 校验通过",
+    "② Diagnoser 沿图谱回溯根因",
+    "③ Planner 生成候选 · 约束检查",
+    "④ Executor 幂等回写 · 多系统并发",
+    "⑤ Auditor 沉淀 PROV 谱系 · 闭环完成"
+  ];
+  const toast = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = toastTexts[i];
+  toast.classList.add("on");
+  setTimeout(()=>toast.classList.remove("on"), PHASE_DURATION_MS - 400);
+  // event burst on phase 0 (Observer triggered)
+  if(i===0){
+    setTimeout(()=>spawnEventBurst(), 200);
+  }
+  // command beams on phase 3 (Executor)
+  if(i===3){
+    setTimeout(()=>spawnCommandBeams(), 100);
+  }
+  // PROV pulse on phase 4 (Auditor)
+  if(i===4){
+    document.querySelectorAll(".prov-node").forEach((n,idx)=>{
+      setTimeout(()=>{
+        n.style.transition = "background .3s";
+        n.style.background = "#fff7ee";
+        setTimeout(()=>n.style.background = "", 280);
+      }, idx*60);
+    });
+  }
+}
+
+function startCycle(){
+  if(phaseTimer) clearInterval(phaseTimer);
+  setPhase(0);
+  phaseTimer = setInterval(()=>{
+    let next = currentPhase + 1;
+    if(next > 4){
+      next = 0;
+      cycleIter++;
+      document.getElementById("pipe-iter").textContent = cycleIter;
+    }
+    setPhase(next);
+  }, PHASE_DURATION_MS);
+}
+
+// ===========================================================
+// 命令光束 (Executor → 3D 异常点)
+// ===========================================================
+function spawnCommandBeams(){
+  const rows = document.querySelectorAll(".action-row");
+  const canvasRect = canvas.getBoundingClientRect();
+  const v = ANOM_POS[currentKey].clone();
+  v.project(camera);
+  const sx = canvasRect.left + (v.x*0.5+0.5) * canvasRect.width;
+  const sy = canvasRect.top  + (-v.y*0.5+0.5) * canvasRect.height;
+
+  rows.forEach((row,i)=>{
+    setTimeout(()=>{
+      row.classList.add("firing");
+      setTimeout(()=>row.classList.remove("firing"), 900);
+      const r = row.getBoundingClientRect();
+      const beam = document.createElement("div");
+      beam.className = "cmd-beam";
+      beam.style.left = (r.left - 4) + "px";
+      beam.style.top  = (r.top + r.height/2 - 4) + "px";
+      document.body.appendChild(beam);
+      requestAnimationFrame(()=>{
+        beam.style.left = sx + "px";
+        beam.style.top  = sy + "px";
+      });
+      setTimeout(()=>beam.style.opacity="0", 1100);
+      setTimeout(()=>beam.remove(), 1500);
+    }, i*120);
+  });
+}
+
+// 事件爆发(Observer 阶段, 从底部到 3D)
+function spawnEventBurst(){
+  const observerCard = document.getElementById("agent-0");
+  if(!observerCard) return;
+  const r = observerCard.getBoundingClientRect();
+  const canvasRect = canvas.getBoundingClientRect();
+  const v = ANOM_POS[currentKey].clone();
+  v.project(camera);
+  const sx = canvasRect.left + (v.x*0.5+0.5) * canvasRect.width;
+  const sy = canvasRect.top  + (-v.y*0.5+0.5) * canvasRect.height;
+  for(let i=0;i<5;i++){
+    setTimeout(()=>{
+      const burst = document.createElement("div");
+      burst.className = "event-burst";
+      burst.style.left = (r.left + r.width/2 + (Math.random()-0.5)*20) + "px";
+      burst.style.top  = (r.top + 10) + "px";
+      document.body.appendChild(burst);
+      requestAnimationFrame(()=>{
+        burst.style.left = sx + "px";
+        burst.style.top  = sy + "px";
+      });
+      setTimeout(()=>burst.style.opacity="0", 850);
+      setTimeout(()=>burst.remove(), 1200);
+    }, i*70);
+  }
+}
+
+// ===========================================================
+// 场景切换
+// ===========================================================
+function switchScene(key){
+  if(key===currentKey) return;
+  currentKey = key;
+  scene.remove(sceneGroup);
+  sceneGroup.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    if(o.material){
+      if(Array.isArray(o.material)) o.material.forEach(m=>m.dispose());
+      else o.material.dispose();
+    }
+  });
+  sceneGroup = BUILDERS[key]();
+  scene.add(sceneGroup);
+  setAgentRigPosition(key);
+  updatePanels(key);
+}
+
+// ===========================================================
+// 鼠标控制 + 动画循环
+// ===========================================================
+let isDragging=false, mx=0, my=0, azimuth=0.78, elevation=0.55, targetAz=0.78, targetEl=0.55;
+let radius = 36, targetRadius = 36;
+canvas.addEventListener("mousedown", e=>{isDragging=true;mx=e.clientX;my=e.clientY;});
+window.addEventListener("mouseup",()=>isDragging=false);
+window.addEventListener("mousemove", e=>{
+  if(!isDragging) return;
+  const dx = e.clientX-mx, dy = e.clientY-my;
+  targetAz -= dx*0.005; targetEl -= dy*0.004;
+  targetEl = Math.max(0.15, Math.min(1.1, targetEl));
+  mx=e.clientX; my=e.clientY;
+});
+canvas.addEventListener("wheel", e=>{
+  targetRadius += e.deltaY*0.03;
+  targetRadius = Math.max(18, Math.min(70, targetRadius));
+  e.preventDefault();
+},{passive:false});
+
+let tClock = 0;
+function tick(){
+  requestAnimationFrame(tick);
+  tClock += 0.016;
+
+  azimuth += (targetAz-azimuth)*0.08;
+  elevation += (targetEl-elevation)*0.08;
+  radius += (targetRadius-radius)*0.08;
+  camera.position.set(
+    Math.cos(azimuth)*Math.cos(elevation)*radius,
+    Math.sin(elevation)*radius,
+    Math.sin(azimuth)*Math.cos(elevation)*radius
+  );
+  camera.lookAt(0,2,0);
+  if(!isDragging) targetAz += 0.0006;
+
+  sceneGroup.traverse(o=>{
+    if(o.userData?.isPulse){
+      o.children.forEach((ch,i)=>{
+        if(ch.geometry?.type?.includes("Ring")){
+          const phase = ch.userData.phase || 0;
+          const k = (tClock*1.2+phase)%2;
+          ch.scale.setScalar(1 + k*2);
+          ch.material.opacity = Math.max(0, 0.7 - k*0.4);
+        }
+      });
+    }
+    if(o.userData?.isFlow){
+      o.children.forEach(p=>{
+        p.userData.t += 0.012;
+        if(p.userData.t>1) p.userData.t = 0;
+        p.position.lerpVectors(p.userData.from, p.userData.to, p.userData.t);
+      });
+    }
+    if(o.userData?.isParcel){
+      o.userData.t += 0.003;
+      if(o.userData.t>1) o.userData.t = 0;
+      const pt = o.userData.curve.getPoint(o.userData.t);
+      o.position.copy(pt);
+    }
+    // 曝气头气泡上升 (aeration 场景)
+    if(o.userData?.isBubble){
+      const ud = o.userData;
+      const cycleT = (tClock * ud.speed * 0.5 + ud.phase) % 1;
+      o.position.y = ud.minY + (ud.maxY - ud.minY) * cycleT;
+      o.position.x = ud.baseX + Math.sin(tClock*2 + ud.phase) * 0.06;
+      o.position.z = ud.baseZ + Math.cos(tClock*2 + ud.phase) * 0.06;
+      // 越升越透明 + 越大
+      o.material.opacity = Math.max(0, 0.7 * (1 - cycleT*0.7));
+      o.scale.setScalar(1 + cycleT * 0.6);
+    }
+    // 搅拌叶轮旋转 (aeration 场景)
+    if(o.userData?.isImpeller){
+      o.rotation.y = tClock * 2 + o.userData.phase;
+    }
+    // ===== 交通场景:列车沿曲线行驶 =====
+    if(o.userData?.isTrain){
+      const ud = o.userData;
+      ud.u = (ud.u + ud.speed*0.004) % 1;
+      o.children.forEach((car,ci)=>{
+        let cu = ud.u - ci*ud.gap;
+        if(cu < 0) cu += 1;
+        const pt = ud.curve.getPointAt(cu);
+        const ahead = ud.curve.getPointAt((cu+0.005)%1);
+        car.position.set(pt.x, 0.32, pt.z);
+        car.lookAt(ahead.x, 0.32, ahead.z);
+      });
+    }
+    // ===== 交通场景:客流环绕换乘站 =====
+    if(o.userData?.isCrowd){
+      const ud = o.userData;
+      ud.angle += ud.speed*0.01;
+      const r = ud.baseR + Math.sin(tClock*1.5+ud.bob)*0.15;
+      o.position.x = ud.cx + Math.cos(ud.angle)*r;
+      o.position.z = ud.cz + Math.sin(ud.angle)*r;
+      o.position.y = 0.95 + Math.abs(Math.sin(tClock*4+ud.bob))*0.1;
+    }
+    // ===== 通用:脉动光环 (客流热力/定位环) =====
+    if(o.userData?.isPulseRing){
+      const ph = o.userData.phase||0;
+      const k = (tClock*1.0+ph)%2;
+      o.scale.setScalar(1 + k*0.8);
+      o.material.opacity = Math.max(0, 0.4 - k*0.18);
+    }
+    // ===== 城市服务:清运车沿路径行驶 =====
+    if(o.userData?.isTruck){
+      const ud = o.userData;
+      ud.t = (ud.t + ud.speed) % 1;
+      const segs = ud.path.length-1;
+      const ft = ud.t*segs;
+      const si = Math.min(segs-1, Math.floor(ft));
+      const lt = ft - si;
+      const a = ud.path[si], b = ud.path[si+1];
+      o.position.lerpVectors(a, b, lt);
+      o.position.y = 0.05;
+      const ang = Math.atan2(b.z-a.z, b.x-a.x);
+      o.rotation.y = -ang;
+    }
+    // ===== 城市服务:社会车辆道路行驶 (人车管理) =====
+    if(o.userData?.isVehicle){
+      const ud = o.userData;
+      ud.pos += ud.speed;
+      if(ud.pos > 14) ud.pos = -14;
+      if(ud.pos < -14) ud.pos = 14;
+      if(ud.onH){ o.position.set(ud.pos, 0.12, ud.lane); o.rotation.y = ud.speed>0?0:Math.PI; }
+      else { o.position.set(ud.lane, 0.12, ud.pos); o.rotation.y = ud.speed>0?Math.PI/2:-Math.PI/2; }
+    }
+    // 加药管道流动 (aeration 场景)
+    if(o.userData?.isPipeFlow){
+      const ud = o.userData;
+      const t = (tClock * ud.speed + ud.phase) % 1;
+      o.position.lerpVectors(ud.from, ud.to, t);
+      o.material.opacity = 1 - Math.abs(t - 0.5);
+      o.material.transparent = true;
+    }
+    // 鼓风机叶轮旋转 (energy 场景)
+    if(o.userData?.isFan){
+      o.rotation.x = tClock * o.userData.speed;
+    }
+    // 专家决策飞向蒸馏炉 (expert 场景)
+    if(o.userData?.isExpertKnowledge){
+      const ud = o.userData;
+      const cycle = (tClock * ud.speed + ud.phase) % 1;
+      o.position.x = ud.baseX + (ud.targetX - ud.baseX) * cycle;
+      o.position.y = ud.baseY + (ud.targetY - ud.baseY) * cycle;
+      o.position.z = ud.baseZ + (ud.targetZ - ud.baseZ) * cycle;
+      o.rotation.x = tClock * 2;
+      o.rotation.y = tClock * 1.5;
+      // 临近炉子时缩小 (被"吞掉")
+      o.scale.setScalar(1 - cycle * 0.7);
+      o.material.opacity = 1 - cycle * 0.6;
+      o.material.transparent = true;
+    }
+    // OCC 信号灯/水晶旋转
+    if(o.userData?.isOCCBeacon){
+      o.rotation.y = tClock * (o.userData.rotateSpeed || 1.2);
+      o.rotation.x = tClock * 0.4;
+      const s = 1 + Math.sin(tClock*2)*0.08;
+      o.scale.setScalar(s);
+    }
+    // FFT 频谱柱跳动 (energy 鼓风机功率)
+    if(o.userData?.isFFTBar){
+      const ud = o.userData;
+      const noise = Math.sin(tClock * 6 + ud.i * 0.7) * 0.5 + 0.5;
+      const dynH = ud.isPeak
+        ? ud.baseH * (0.85 + noise * 0.4)
+        : ud.baseH * (0.75 + noise * 0.4);
+      o.scale.y = dynH / ud.baseH;
+      o.position.y = ud.baseY + dynH/2;
+    }
+    // 故障设备振动 (energy BLW-2)
+    if(o.userData?.isFaultDoor){
+      const ud = o.userData;
+      o.position.x = ud.baseX + Math.sin(tClock * 16 + ud.phase) * 0.025;
+      o.rotation.z = Math.sin(tClock * 14 + ud.phase) * 0.018 + Math.PI/2;
+    }
+    // 智能体节点脉动 (digitaltwin + softsensor 神经网络)
+    if(o.userData?.isAgentNode){
+      const ud = o.userData;
+      const s = 1 + Math.sin(tClock * 2 + ud.phase) * 0.15;
+      o.scale.setScalar(s);
+      o.position.y = ud.baseY + Math.sin(tClock * 1.5 + ud.phase) * 0.06;
+      o.rotation.y = tClock * 0.8 + ud.phase;
+    }
+    // 卫星绕智能体公转 (digitaltwin)
+    if(o.userData?.isSatellite){
+      const ud = o.userData;
+      const a = tClock * ud.speed + ud.phase;
+      o.position.x = ud.centerX + Math.cos(a) * ud.orbitR;
+      o.position.z = ud.centerZ + Math.sin(a) * ud.orbitR;
+      o.position.y = ud.centerY + Math.sin(a * 2) * 0.18;
+      o.rotation.x = tClock * 3;
+      o.rotation.y = tClock * 2;
+    }
+    // 爆管喷水柱 (water 场景) — 抛物线喷射水珠
+    if(o.userData?.isWaterJet){
+      const ud = o.userData;
+      const cycle = (tClock * ud.speed + ud.phase) % 1;
+      // 沿固定方位角喷出 + 抛物线轨迹
+      const r = ud.spread * cycle;
+      o.position.x = ud.baseX + Math.cos(ud.angle) * r;
+      o.position.z = ud.baseZ + Math.sin(ud.angle) * r;
+      // 抛物线: 先升后落
+      o.position.y = 0.1 + ud.maxH * Math.sin(cycle * Math.PI);
+      o.material.opacity = 0.85 * (1 - cycle * 0.5);
+      o.scale.setScalar(1 - cycle * 0.4);
+    }
+    // 电弧火花 (power 场景) — 从故障开关高度散射
+    if(o.userData?.isSpark){
+      const ud = o.userData;
+      const cycle = (tClock * ud.speed + ud.phase) % 1;
+      const r = ud.spread * cycle;
+      o.position.x = ud.baseX + Math.cos(ud.angle) * r;
+      o.position.z = ud.baseZ + Math.sin(ud.angle) * r;
+      o.position.y = ud.baseY + ud.maxH * Math.sin(cycle * Math.PI) - cycle * 0.3;
+      o.material.opacity = 0.95 * (1 - cycle);
+      // 闪烁感
+      o.visible = (Math.sin(tClock * 30 + ud.phase * 10) > -0.6);
+    }
+    // WBM 全局扫描扇区旋转 (agentos 场景)
+    if(o.userData?.isCmdScan){
+      o.rotation.z = tClock * 1.2;
+    }
+    // 燃气气云扩散 (pipeline 场景) — 上升 + 横向漂移 + 膨胀
+    if(o.userData?.isGasCloud){
+      const ud = o.userData;
+      const cycle = (tClock * ud.speed * 0.4 + ud.phase) % 1;
+      o.position.y = ud.minY + (ud.maxY - ud.minY) * cycle;
+      o.position.x = ud.baseX + ud.offsetX * cycle * (1 + Math.sin(tClock + ud.phase) * 0.3);
+      o.position.z = ud.baseZ + ud.offsetZ * cycle;
+      o.material.opacity = 0.35 * (1 - cycle * 0.75);
+      o.scale.setScalar(1 + cycle * 2.2);
+    }
+    // 雨丝下落 (drainage 场景)
+    if(o.userData?.isRain){
+      const ud = o.userData;
+      const cycle = (tClock * ud.speed * 0.6 + ud.phase) % 1;
+      o.position.x = ud.baseX;
+      o.position.z = ud.baseZ;
+      o.position.y = ud.topY - (ud.topY - ud.botY) * cycle;
+      o.material.opacity = 0.6 * (1 - cycle * 0.4);
+    }
+    // 内涝积水脉动上涨 (drainage 场景)
+    if(o.userData?.isFloodWater){
+      const ud = o.userData;
+      // 缓慢呼吸式上涨 (0.12 → 0.4 往复)
+      const level = 0.5 + Math.sin(tClock * 0.5) * 0.5; // 0..1
+      o.position.y = ud.baseY + level * 0.28;
+      o.scale.setScalar(1 + level * 0.12);
+      o.material.opacity = 0.55 + level * 0.2;
+    }
+  });
+
+  if(agentRig){
+    const ud = agentRig.userData;
+    if(ud.ring)  ud.ring.rotation.z  =  tClock*1.2;
+    if(ud.inner) ud.inner.rotation.z = -tClock*1.8;
+    if(ud.sweep) ud.sweep.rotation.z =  tClock*2.4;
+    if(ud.eye){
+      const s = 1 + Math.sin(tClock*3.5)*0.15;
+      ud.eye.scale.setScalar(s);
+    }
+    if(ud.beam){
+      const base = currentPhase===3 ? 0.35 : 0.2;
+      ud.beam.material.opacity = base + Math.sin(tClock*2.2)*0.08;
+    }
+    if(ud.ripples){
+      ud.ripples.forEach(r=>{
+        const phase = r.userData.phase || 0;
+        const k = (tClock*1.0+phase)%2.5;
+        r.scale.setScalar(1+k*1.6);
+        r.material.opacity = Math.max(0, 0.55 - k*0.22);
+      });
+    }
+  }
+
+  // time cursor
+  const pct = 30 + Math.sin(tClock*0.18)*8;
+  const tc = document.getElementById("time-cursor");
+  if(tc) tc.style.left = pct + "%";
+  const delta = Math.round((pct-30)*15);
+  document.getElementById("time-val").textContent =
+    (delta>=0?"现在 + ":"现在 − ") + String(Math.abs(delta)).padStart(2,"0") + ":00";
+
+  renderer.render(scene, camera);
+}
+
+// ===========================================================
+// Tabs / buttons
+// ===========================================================
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    document.querySelector(`.tab-panel[data-tab="${tab.dataset.tab}"]`).classList.add("active");
+  };
+});
+
+document.getElementById("btn-twin").onclick = ()=>{
+  document.getElementById("btn-twin").classList.add("on");
+  document.getElementById("btn-phys").classList.remove("on");
+  scene.fog = new THREE.Fog(0x0a1119, 40, 120);
+  ground.material.color.setHex(0xebe3d3);
+};
+document.getElementById("btn-phys").onclick = ()=>{
+  document.getElementById("btn-phys").classList.add("on");
+  document.getElementById("btn-twin").classList.remove("on");
+  scene.fog = new THREE.Fog(0x0e1827, 28, 95);
+  ground.material.color.setHex(0xc7bfaf);
+};
+
+document.querySelectorAll(".phase-bar button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll(".phase-bar button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    const m = {poc:"PoC · 第 8 周 / 12 周", pilot:"试点 · 第 4 月 / 6 月", scale:"规模化 · 第 9 月 / 18 月"};
+    document.getElementById("footer-poc").textContent = m[b.dataset.phase];
+  };
+});
+
+const execBtn = document.getElementById("exec-btn");
+execBtn.onclick = ()=>{
+  execBtn.textContent = "已下发 · 监听物理回响…";
+  execBtn.style.background = "#15803d";
+  spawnCommandBeams();
+  document.querySelectorAll(".status-dot.running").forEach(d=>{
+    d.classList.remove("running"); d.classList.add("done");
+    d.parentElement.lastChild.textContent = "已完成";
+  });
+  setTimeout(()=>{
+    execBtn.innerHTML = '下发执行 · 含幂等补偿 <span class="arrow">→</span>';
+    execBtn.style.background = "";
+  }, 3200);
+};
+
+// ===========================================================
+// 导入向导 (R2RML / 语义对齐 / 实例挂载 三步)
+// ===========================================================
+
+// =====================================================================
+// 多行业模板库 — 每个模板包含若干 sheet (业务场景)
+// 每个 sheet 包含: 预览表头/行, R2RML 列映射, 语义对齐三列, 实例数据
+// =====================================================================
+
+// AHS · 供水管网 OAG 模板的三个 sheet (默认)
+const SHEET_DATA = {
+  branch: {
+    label:"供水管网在线监测",
+    icon:"≈",
+    headers:["实体ID","标签","所属类","在线状态","当前值","告警级别","响应SLA"],
+    rows:[
+      ["管段_DN400_2840","DN400 主管 G2840","供水主管","爆管","压降 0.18MPa","高","2小时"],
+      ["阀门_V2841","隔离阀 V2841","阀门","待关闭","-","高","1分钟"],
+      ["传感器_PRS_G2840","G2840 压力传感器","压力仪","告警","0.18 MPa↓","高","-"],
+      ["告警_BURST_881","DN400 爆管告警","告警事件","-","-","高","-"],
+      ["工单_WTR_001","爆管抢修工单","工单","-","-","-","2小时"],
+    ],
+    r2rml:[
+      {col:"A", name:"实体ID",   onto:"rr:subjectMap → ahs:Instance",      tag:"主键"},
+      {col:"B", name:"标签",     onto:"rdfs:label",                         tag:"标签"},
+      {col:"C", name:"所属类",   onto:"rdf:type → 本体 Class",              tag:"类型"},
+      {col:"D", name:"在线状态", onto:"ahs:onlineStatus (xsd:string)",     tag:"属性"},
+      {col:"E", name:"当前值",   onto:"sosa:hasSimpleResult",              tag:"属性"},
+      {col:"F", name:"告警级别", onto:"ahs:alertSeverity (xsd:string)",    tag:"属性"},
+      {col:"G", name:"响应SLA",  onto:"ahs:responseSLA (xsd:integer)",     tag:"属性"},
+    ],
+    align:{
+      attrs:[
+        {k:"DATA PROPERTY", v:"<code>ahs:pressure</code> · 管网压力"},
+        {k:"DATA PROPERTY", v:"<code>ahs:flowRate</code> · 瞬时流量"},
+        {k:"DATA PROPERTY", v:"<code>ahs:leakageRate</code> · 漏损率"},
+      ],
+      concepts:[
+        {k:"CONCEPT", v:"<code>ahs:PipeBurst</code> · 管道爆裂"},
+        {k:"CONCEPT", v:"<code>ahs:LeakDetected</code> · 漏损识别"},
+        {k:"CONCEPT", v:"<code>ahs:IsolationArea</code> · 关阀影响域"},
+      ],
+      rules:[
+        {k:"RULE · 高", v:"<code>rule_wtr_001</code> 压降>0.15MPa → 定位爆管"},
+        {k:"RULE · 高", v:"<code>rule_wtr_002</code> 最小影响域 → 关阀隔离"},
+        {k:"RULE · 中", v:"<code>rule_wtr_003</code> 夜间最小流 → 漏损评估"},
+      ],
+      links:[[0,0,0],[1,1,0],[2,2,2]]
+    },
+    instances:[
+      {id:"管段_DN400_2840", cls:"供水主管"},
+      {id:"管段_DN200_2841", cls:"供水支管"},
+      {id:"DMA_07",         cls:"计量分区"},
+      {id:"阀门_V2841",      cls:"阀门"},
+      {id:"阀门_V2843",      cls:"阀门"},
+      {id:"传感器_PRS_G2840",cls:"压力仪"},
+      {id:"传感器_FLW_G2840",cls:"流量计"},
+      {id:"告警_BURST_881",  cls:"告警事件"},
+      {id:"工单_WTR_001",    cls:"工单"},
+      {id:"泵站_3",          cls:"增压泵站"},
+      {id:"用户_片区A",      cls:"用户"},
+      {id:"消火栓_H_22",     cls:"消火栓"},
+    ]
+  },
+  credit: {
+    label:"抢修决策",
+    icon:"⚙",
+    headers:["实体ID","标签","所属类","调整对象","建议动作","状态","置信度"],
+    rows:[
+      ["决策_VALVE_881","关阀隔离决策","抢修决策","V2841/V2843","关闭","执行中","0.90"],
+      ["决策_PUMP_442","补压保供决策","抢修决策","#3 泵站","提升出压","执行中","0.86"],
+      ["水力模型_反推","管网水力模型","水力模型","爆管定位","±50m","推断完成","-"],
+      ["影响域_186户","关阀影响域","影响域","186 户","-","已通知","-"],
+      ["保障约束_压力","最小服务压力","保障约束","≥0.14MPa","-","-","-"],
+    ],
+    r2rml:[
+      {col:"A", name:"实体ID",     onto:"rr:subjectMap → ahs:Instance"},
+      {col:"B", name:"标签",       onto:"rdfs:label"},
+      {col:"C", name:"所属类",     onto:"rdf:type → 本体 Class"},
+      {col:"D", name:"调整对象",   onto:"ahs:targetAsset"},
+      {col:"E", name:"建议动作",   onto:"ahs:recommendedAction"},
+      {col:"F", name:"状态",       onto:"ahs:decisionStatus"},
+      {col:"G", name:"置信度",     onto:"ahs:confidence (xsd:decimal)"},
+    ],
+    align:{
+      attrs:[
+        {k:"DATA PROPERTY", v:"<code>ahs:confidence</code> · 决策置信度"},
+        {k:"DATA PROPERTY", v:"<code>ahs:affectedCustomers</code> · 影响户数"},
+        {k:"DATA PROPERTY", v:"<code>ahs:serviceGuarantee</code> · 供水保障"},
+      ],
+      concepts:[
+        {k:"CONCEPT", v:"<code>ahs:ValveIsolation</code> · 关阀隔离"},
+        {k:"CONCEPT", v:"<code>ahs:PressureCompensation</code> · 补压保供"},
+        {k:"CONCEPT", v:"<code>ahs:MinImpactPlan</code> · 最小影响方案"},
+      ],
+      rules:[
+        {k:"RULE · 高", v:"<code>rule_dec_001</code> 置信度≥0.75 → 自动关阀"},
+        {k:"RULE · 高", v:"<code>rule_dec_002</code> 影响域 ≤200户优先"},
+        {k:"RULE · 中", v:"<code>rule_dec_003</code> 同步补压保供"},
+      ],
+      links:[[0,0,0],[1,1,0],[2,2,2]]
+    },
+    instances:[
+      {id:"决策_VALVE_881",  cls:"抢修决策"},
+      {id:"决策_PUMP_442",   cls:"抢修决策"},
+      {id:"决策_NOTIFY",     cls:"抢修决策"},
+      {id:"水力模型",        cls:"水力模型"},
+      {id:"影响域_186户",    cls:"影响域"},
+      {id:"保障约束_压力",   cls:"保障约束"},
+      {id:"保障约束_户数",   cls:"保障约束"},
+      {id:"抢修队_北区",     cls:"抢修队"},
+      {id:"GIS_定位",        cls:"GIS"},
+      {id:"工艺_关阀序",     cls:"操作规程"},
+    ]
+  },
+  reg: {
+    label:"水质与法规",
+    icon:"⚖",
+    headers:["实体ID","标签","所属类","参数","限值","当前值","合规状态"],
+    rows:[
+      ["标准_GB5749","生活饮用水卫生标准","标准","GB5749-2022","-","-","有效"],
+      ["指标_浊度","浊度","水质指标","浊度","≤1 NTU","0.42","✓ 合规"],
+      ["指标_余氯","余氯","水质指标","余氯","0.3-2.0","0.65","✓ 合规"],
+      ["指标_压力","管网压力","服务指标","压力","≥0.14MPa","0.18↓","⚠ 临界"],
+      ["报送_周报","供水月度报送","报送记录","-","-","-","待提交"],
+    ],
+    r2rml:[
+      {col:"A", name:"实体ID",   onto:"rr:subjectMap → ahs:Instance"},
+      {col:"B", name:"标签",     onto:"rdfs:label"},
+      {col:"C", name:"所属类",   onto:"rdf:type → 本体 Class"},
+      {col:"D", name:"参数",     onto:"ahs:parameterCode"},
+      {col:"E", name:"限值",     onto:"ahs:limitValue"},
+      {col:"F", name:"当前值",   onto:"ahs:currentValue"},
+      {col:"G", name:"合规状态", onto:"ahs:complianceStatus"},
+    ],
+    align:{
+      attrs:[
+        {k:"DATA PROPERTY", v:"<code>ahs:limitValue</code> · 标准限值"},
+        {k:"DATA PROPERTY", v:"<code>ahs:complianceStatus</code> · 合规状态"},
+        {k:"DATA PROPERTY", v:"<code>ahs:serviceGuarantee</code> · 供水保障率"},
+      ],
+      concepts:[
+        {k:"CONCEPT", v:"<code>ahs:WaterQualityClass</code> · 水质等级"},
+        {k:"CONCEPT", v:"<code>ahs:ServiceInterruption</code> · 停水事件"},
+        {k:"CONCEPT", v:"<code>ahs:RegulatoryReport</code> · 监管报送"},
+      ],
+      rules:[
+        {k:"RULE · 高", v:"<code>rule_reg_001</code> 水质超标即时报警"},
+        {k:"RULE · 高", v:"<code>rule_reg_002</code> 停水超时上报建委"},
+        {k:"RULE · 高", v:"<code>rule_reg_003</code> 月报自动生成"},
+      ],
+      links:[[0,0,0],[1,1,0],[2,2,2]]
+    },
+    instances:[
+      {id:"标准_GB5749", cls:"标准"},
+      {id:"标准_CJJ92", cls:"标准"},
+      {id:"指标_浊度", cls:"水质指标"},
+      {id:"指标_余氯", cls:"水质指标"},
+      {id:"指标_压力", cls:"服务指标"},
+      {id:"指标_保障率", cls:"服务指标"},
+      {id:"报送_周报", cls:"报送记录"},
+      {id:"报送_月报", cls:"报送记录"},
+      {id:"水司",     cls:"责任主体"},
+      {id:"建委",     cls:"监管机构"},
+      {id:"卫健委",   cls:"监管机构"},
+      {id:"停水事件_05", cls:"停水事件"},
+    ]
+  }
+};
+
+// AHS · 城市配电网 OAG 模板
+const MANU_SHEETS = {
+  aps: {
+    label:"配电网调度", icon:"⚡",
+    headers:["实体ID","标签","所属类","状态","电流A","负荷率%","拓扑"],
+    rows:[
+      ["开关_S07","#S07 分段开关","开关","跳闸","8400","-","故障段"],
+      ["馈线_F12","10kV 馈线-12","馈线","故障","-","96","主供"],
+      ["联络_T03","T-03 联络开关","联络开关","待合闸","-","-","转供"],
+      ["台区_TZ3","3 号台区","台区","失电","-","0","下游"],
+      ["DTU_S07","S07 配电终端","DTU","告警","-","-","-"],
+    ],
+    r2rml:[
+      {col:"A", name:"实体ID",   onto:"rr:subjectMap → ahs:Instance",     tag:"主键"},
+      {col:"B", name:"标签",     onto:"rdfs:label",                        tag:"标签"},
+      {col:"C", name:"所属类",   onto:"rdf:type → 本体 Class",             tag:"类型"},
+      {col:"D", name:"状态",     onto:"ahs:switchState (xsd:string)",     tag:"属性"},
+      {col:"E", name:"电流A",   onto:"ahs:current (xsd:decimal)",        tag:"属性"},
+      {col:"F", name:"负荷率%",  onto:"ahs:loadFactor (xsd:decimal)",     tag:"属性"},
+      {col:"G", name:"拓扑",     onto:"ahs:topologyRole",                  tag:"属性"},
+    ],
+    align:{
+      attrs:[
+        {k:"DATA PROPERTY", v:"<code>ahs:faultCurrent</code> · 故障电流"},
+        {k:"DATA PROPERTY", v:"<code>ahs:loadFactor</code> · 负荷率"},
+        {k:"DATA PROPERTY", v:"<code>ahs:transferCapacity</code> · 转供容量"},
+      ],
+      concepts:[
+        {k:"CONCEPT", v:"<code>ahs:FaultSection</code> · 故障区段"},
+        {k:"CONCEPT", v:"<code>ahs:FLISR</code> · 故障自愈"},
+        {k:"CONCEPT", v:"<code>ahs:TransferPath</code> · 转供路径"},
+      ],
+      rules:[
+        {k:"RULE · 高", v:"<code>rule_pwr_001</code> 过流 → 拓扑定位故障段"},
+        {k:"RULE · 高", v:"<code>rule_pwr_002</code> FLISR 隔离+转供"},
+        {k:"RULE · 中", v:"<code>rule_pwr_003</code> N-1 校验 → 容量裕度"},
+      ],
+      links:[[0,0,0],[1,1,1],[2,2,2]]
+    },
+    instances:[
+      {id:"开关_S07", cls:"开关"},
+      {id:"开关_S09", cls:"开关"},
+      {id:"馈线_F12", cls:"馈线"},
+      {id:"联络_T03", cls:"联络开关"},
+      {id:"台区_TZ3", cls:"台区"},
+      {id:"台区_TZ4", cls:"台区"},
+      {id:"DTU_S07",  cls:"DTU"},
+      {id:"FTU_S09",  cls:"FTU"},
+      {id:"变电站_110", cls:"变电站"},
+      {id:"变压器_T1", cls:"变压器"},
+      {id:"故障_OC_001",cls:"故障事件"},
+      {id:"分布式_DG2", cls:"分布式电源"},
+    ]
+  },
+  pdm: {
+    label:"负荷与可靠性", icon:"◉",
+    headers:["实体ID","标签","所属类","指标","当前值","目标","状态"],
+    rows:[
+      ["可靠性_SAIDI","年平均停电时间","可靠性指标","SAIDI","42 min","≤60","✓"],
+      ["可靠性_SAIFI","年平均停电频次","可靠性指标","SAIFI","0.8 次","≤1.0","✓"],
+      ["负荷_F12","馈线-12 负荷","负荷","负荷率","96%","≤80%","⚠ 过载"],
+      ["复电_42s","本次故障复电","复电记录","时间","42 s","≤60s","✓"],
+      ["保护_定值_S07","S07 保护定值","保护定值","整定值","-","-","待优化"],
+    ],
+    r2rml:[
+      {col:"A", name:"实体ID",   onto:"rr:subjectMap → ahs:Instance",    tag:"主键"},
+      {col:"B", name:"标签",     onto:"rdfs:label",                       tag:"标签"},
+      {col:"C", name:"所属类",   onto:"rdf:type → 本体 Class",            tag:"类型"},
+      {col:"D", name:"指标",     onto:"ahs:metricCode",                   tag:"属性"},
+      {col:"E", name:"当前值",   onto:"ahs:currentValue",                 tag:"属性"},
+      {col:"F", name:"目标",     onto:"ahs:targetValue",                  tag:"属性"},
+      {col:"G", name:"状态",     onto:"ahs:metricStatus",                 tag:"属性"},
+    ],
+    align:{
+      attrs:[
+        {k:"DATA PROPERTY", v:"<code>ahs:saidi</code> · 系统停电时间"},
+        {k:"DATA PROPERTY", v:"<code>ahs:restoreTime</code> · 复电时间"},
+        {k:"DATA PROPERTY", v:"<code>ahs:loadFactor</code> · 负荷率"},
+      ],
+      concepts:[
+        {k:"CONCEPT", v:"<code>ahs:OverLoad</code> · 过载"},
+        {k:"CONCEPT", v:"<code>ahs:ReliabilityIndex</code> · 可靠性指标"},
+        {k:"CONCEPT", v:"<code>ahs:ProtectionTuning</code> · 保护优化"},
+      ],
+      rules:[
+        {k:"RULE · 高", v:"<code>rule_rel_001</code> 负荷>80% → 转移负荷"},
+        {k:"RULE · 高", v:"<code>rule_rel_002</code> 复电>60s → 优化保护"},
+        {k:"RULE · 中", v:"<code>rule_rel_003</code> SAIDI 月度复盘"},
+      ],
+      links:[[0,0,0],[1,1,1],[2,2,2]]
+    },
+    instances:[
+      {id:"可靠性_SAIDI", cls:"可靠性指标"},
+      {id:"可靠性_SAIFI", cls:"可靠性指标"},
+      {id:"负荷_F12", cls:"负荷"},
+      {id:"负荷_F13", cls:"负荷"},
+      {id:"复电_42s", cls:"复电记录"},
+      {id:"保护_S07", cls:"保护定值"},
+      {id:"保护_S09", cls:"保护定值"},
+      {id:"过载事件_06", cls:"过载事件"},
+      {id:"调度员_Zhao", cls:"调度员"},
+      {id:"巡检计划_07", cls:"巡检计划"},
+    ]
+  }
+};
+
+// AHS · 地下管网/管廊 OAG 模板
+const XB_SHEETS = {
+  fulfill: {
+    label:"综合管廊监测", icon:"⊟",
+    headers:["实体ID","标签","所属类","参数","当前值","阈值","告警"],
+    rows:[
+      ["舱段_K3_Gas","K3 燃气舱","管廊舱段","甲烷","1.8 %LEL","≤20%","✗ 泄漏"],
+      ["传感器_M07","M07 甲烷探测器","气体探测器","甲烷","1.8 %LEL","-","高"],
+      ["管线_GV07","GV-07 燃气管","燃气管","压力","0.4 MPa","-","泄漏"],
+      ["风机_K3","K3 通风机","通风机","频率","100%","-","提速"],
+      ["沉降_K3","K3 舱沉降","沉降监测","沉降","2.1mm","≤5mm","✓"],
+    ],
+    r2rml:[
+      {col:"A", name:"实体ID",     onto:"rr:subjectMap → ahs:Instance"},
+      {col:"B", name:"标签",       onto:"rdfs:label"},
+      {col:"C", name:"所属类",     onto:"rdf:type → 本体 Class"},
+      {col:"D", name:"参数",       onto:"ahs:monitorParameter"},
+      {col:"E", name:"当前值",     onto:"ahs:currentReading"},
+      {col:"F", name:"阈值",       onto:"ahs:thresholdValue"},
+      {col:"G", name:"告警",       onto:"ahs:alertStatus"},
+    ],
+    align:{
+      attrs:[
+        {k:"DATA PROPERTY", v:"<code>ahs:methaneLEL</code> · 甲烷浓度"},
+        {k:"DATA PROPERTY", v:"<code>ahs:settlement</code> · 沉降值"},
+        {k:"DATA PROPERTY", v:"<code>ahs:airFlow</code> · 通风量"},
+      ],
+      concepts:[
+        {k:"CONCEPT", v:"<code>ahs:GasLeak</code> · 燃气泄漏"},
+        {k:"CONCEPT", v:"<code>ahs:DiffusionModel</code> · 扩散仿真"},
+        {k:"CONCEPT", v:"<code>ahs:SettlementAnomaly</code> · 沉降异常"},
+      ],
+      rules:[
+        {k:"RULE · 高", v:"<code>rule_gas_001</code> 甲烷>1.5%LEL → 通风切断"},
+        {k:"RULE · 高", v:"<code>rule_gas_002</code> 扩散仿真 → 疏散范围"},
+        {k:"RULE · 中", v:"<code>rule_gas_003</code> 沉降速率 → 结构预警"},
+      ],
+      links:[[0,0,0],[1,1,0],[2,2,2]]
+    },
+    instances:[
+      {id:"舱段_K3_Gas", cls:"管廊舱段"},
+      {id:"舱段_K3_Power", cls:"管廊舱段"},
+      {id:"舱段_K3_Water", cls:"管廊舱段"},
+      {id:"传感器_M07", cls:"气体探测器"},
+      {id:"传感器_M08", cls:"气体探测器"},
+      {id:"管线_GV07", cls:"燃气管"},
+      {id:"风机_K3", cls:"通风机"},
+      {id:"防火门_K3", cls:"防火门"},
+      {id:"沉降_K3", cls:"沉降监测"},
+      {id:"泄漏事件_06", cls:"泄漏事件"},
+      {id:"巡检员_Li", cls:"巡检员"},
+      {id:"切断阀_GV07", cls:"切断阀"},
+    ]
+  },
+  customs: {
+    label:"联动与处置", icon:"⊜",
+    headers:["实体ID","标签","所属类","处置对象","动作","状态","责任主体"],
+    rows:[
+      ["决策_VENT_992","通风切断决策","联动决策","K3 舱","风机+切断","执行中","管廊公司"],
+      ["决策_EVAC","人员疏散决策","联动决策","巡检人员","疏散引导","执行中","安全部"],
+      ["扩散_仿真_001","泄漏扩散仿真","扩散模型","影响范围","2 舱段","完成","-"],
+      ["消防联动_K3","消防系统联动","消防联动","防火门","关闭","完成","消防"],
+      ["燃气公司","燃气供应商","责任主体","-","切源","已通知","燃气"],
+    ],
+    r2rml:[
+      {col:"A", name:"实体ID",     onto:"rr:subjectMap → ahs:Instance"},
+      {col:"B", name:"标签",       onto:"rdfs:label"},
+      {col:"C", name:"所属类",     onto:"rdf:type → 本体 Class"},
+      {col:"D", name:"处置对象",   onto:"ahs:targetAsset"},
+      {col:"E", name:"动作",       onto:"ahs:actionType"},
+      {col:"F", name:"状态",       onto:"ahs:actionStatus"},
+      {col:"G", name:"责任主体",   onto:"ahs:responsibleParty"},
+    ],
+    align:{
+      attrs:[
+        {k:"DATA PROPERTY", v:"<code>ahs:ventilationRate</code> · 通风倍率"},
+        {k:"DATA PROPERTY", v:"<code>ahs:evacuationTime</code> · 疏散时间"},
+        {k:"DATA PROPERTY", v:"<code>ahs:responsibleParty</code> · 责任主体"},
+      ],
+      concepts:[
+        {k:"CONCEPT", v:"<code>ahs:VentilationCutoff</code> · 通风切断"},
+        {k:"CONCEPT", v:"<code>ahs:PersonnelEvac</code> · 人员疏散"},
+        {k:"CONCEPT", v:"<code>ahs:FireLinkage</code> · 消防联动"},
+      ],
+      rules:[
+        {k:"RULE · 高", v:"<code>rule_act_001</code> 泄漏 → 通风+切断+疏散"},
+        {k:"RULE · 高", v:"<code>rule_act_002</code> 责任主体追溯链"},
+        {k:"RULE · 中", v:"<code>rule_act_003</code> 处置后复测确认"},
+      ],
+      links:[[0,0,0],[1,1,1],[2,2,2]]
+    },
+    instances:[
+      {id:"决策_VENT_992", cls:"联动决策"},
+      {id:"决策_EVAC", cls:"联动决策"},
+      {id:"决策_CUTOFF", cls:"联动决策"},
+      {id:"扩散_仿真_001", cls:"扩散模型"},
+      {id:"扩散_仿真_002", cls:"扩散模型"},
+      {id:"消防联动_K3", cls:"消防联动"},
+      {id:"管廊公司", cls:"责任主体"},
+      {id:"安全部", cls:"责任主体"},
+      {id:"燃气公司", cls:"责任主体"},
+      {id:"应急办", cls:"责任主体"},
+    ]
+  }
+};
+
+// =====================================================================
+// 顶层模板库 — 按行业组织, 每个含若干 sheet
+// =====================================================================
+const TEMPLATES = {
+  jk: {
+    name: "AHS · 供水管网",
+    file: "AHS_供水管网_OAG模板.xlsx",
+    icon: "XLS",
+    iconBg: "linear-gradient(135deg,#1d6f42,#166534)",
+    summary: { classes:16, instances:24, relations:18, dataProps:10, rules:6, agents:1 },
+    fileMeta: "3 个工作表 · 219 行实例 · 56 个本体类 · 19 条业务规则",
+    sheets: SHEET_DATA,                  // {branch, credit, reg}
+    defaultSheet: "branch",
+    builtin: true,
+  },
+  manu: {
+    name: "AHS · 城市配电网",
+    file: "AHS_城市配电网_OAG模板.xlsx",
+    icon: "XLS",
+    iconBg: "linear-gradient(135deg,#c2410c,#7c2d12)",
+    summary: { classes:14, instances:26, relations:21, dataProps:9, rules:5, agents:1 },
+    fileMeta: "2 个工作表 · 168 行实例 · 28 条关系 · 5 条业务规则",
+    sheets: MANU_SHEETS,                 // {aps, pdm}
+    defaultSheet: "aps",
+    builtin: true,
+  },
+  xb: {
+    name: "AHS · 地下管网/管廊",
+    file: "AHS_地下管网_OAG模板.xlsx",
+    icon: "XLS",
+    iconBg: "linear-gradient(135deg,#1e6091,#0c4a6e)",
+    summary: { classes:18, instances:32, relations:24, dataProps:12, rules:7, agents:1 },
+    fileMeta: "2 个工作表 · 215 行实例 · 36 条关系 · 7 条业务规则",
+    sheets: XB_SHEETS,                   // {fulfill, customs}
+    defaultSheet: "fulfill",
+    builtin: true,
+  },
+  // 'custom' 槽位会在用户上传 Excel 后被动态填充
+  custom: null,
+};
+
+// 当前选中的模板 / sheet 状态
+let currentTpl = "jk";
+
+// helper: 根据当前模板和指定 sheet key 返回 sheet 数据对象
+function getSheet(sheetKey){
+  const tpl = TEMPLATES[currentTpl];
+  if(!tpl || !tpl.sheets) return null;
+  return tpl.sheets[sheetKey] || null;
+}
+function getCurrentSheet(){ return getSheet(currentSheet); }
+
+// 三步的解说语 — 根据当前模板动态生成 (用第一个 sheet 的语义对齐数据为例子)
+function getStepQuote(s){
+  const tpl = TEMPLATES[currentTpl];
+  const sheet = getCurrentSheet();
+  const tplName = tpl ? tpl.name : "业务";
+  const sheetLabel = sheet ? sheet.label : "场景";
+  // 提取语义对齐第一组的关键词
+  let exampleAttr = "数据属性", exampleConcept = "本体概念", exampleRule = "业务规则";
+  if(sheet && sheet.align){
+    const a = sheet.align.attrs[0]?.v || "";
+    const c = sheet.align.concepts[0]?.v || "";
+    const r = sheet.align.rules[0]?.v || "";
+    // 从 v 字符串提取中文部分 (去除 <code> 包装后取最后一段)
+    const stripCode = (s)=>s.replace(/<code>[^<]*<\/code>/g,"").replace(/·/,"").trim();
+    exampleAttr = stripCode(a) || exampleAttr;
+    exampleConcept = stripCode(c) || exampleConcept;
+    exampleRule = stripCode(r) || exampleRule;
+  }
+  return [
+    `已识别 <b>${tplName}</b> 模板 — 系统检测到标准的 <b>实体类 / 实例 / 关系 / 属性 / 规则</b> 五段式结构。点击下一步,看 R2RML 怎么自动把它接进本体。`,
+    `这一步用 <b>R2RML 映射规则</b>把 Excel 的列自动翻译成本体语言 — 业务字段一一对应到本体类与数据属性。<b>不用你们改现有系统。</b>`,
+    `语义对齐 · 把 Excel 的"<b>${exampleAttr}</b>"自动关联到本体里的"<b>${exampleConcept}</b>"概念,并触发对应的"<b>${exampleRule}</b>"业务规则。`,
+    `完成挂载 · 实例数据像粒子一样飞入 4D 图谱节点,后续 <b>5 个 Agent</b> 就能在这张图上做闭环推理与执行。`,
+  ][s] || "";
+}
+
+let currentSheet = "branch";
+let wizStep = 0;
+
+function openWizard(){
+  document.getElementById("wiz-overlay").classList.add("on");
+  wizStep = 0;
+  setWizStep(0);
+  renderTplCards();
+  renderSheetTabs();
+  renderFileCard();
+  renderOntoSummary();
+  renderPreviewTable(currentSheet);
+}
+function closeWizard(){
+  document.getElementById("wiz-overlay").classList.remove("on");
+}
+
+function setWizStep(s){
+  wizStep = s;
+  document.querySelectorAll(".wiz-step").forEach((el,i)=>{
+    el.classList.toggle("active", i===s);
+    el.classList.toggle("completed", i<s);
+  });
+  for(let k=0;k<3;k++){
+    const f = document.getElementById("ws-fill-"+k);
+    if(f) f.style.width = (k<s ? "100%" : "0%");
+  }
+  document.querySelectorAll(".wiz-pane").forEach((el,i)=>{
+    el.classList.toggle("active", parseInt(el.dataset.step)===s);
+  });
+  document.getElementById("wiz-quote").innerHTML = getStepQuote(s);
+  document.getElementById("wiz-back").disabled = (s===0);
+
+  const next = document.getElementById("wiz-next");
+  if(s===3){
+    next.textContent = "完成 · 进入孪生";
+  } else {
+    next.innerHTML = "下一步 →";
+  }
+
+  // 动态渲染各步骤内容
+  if(s===1) renderR2RML();
+  if(s===2) renderAlign();
+  if(s===3) startInstanceAttach();
+}
+
+function renderPreviewTable(sheet){
+  const data = getSheet(sheet);
+  const host = document.getElementById("preview-table-host");
+  let html = '<table class="preview-table"><thead><tr>';
+  data.headers.forEach(h=>html += `<th>${h}</th>`);
+  html += '</tr></thead><tbody>';
+  data.rows.forEach(r=>{
+    html += '<tr>';
+    r.forEach(c=>html += `<td>${c}</td>`);
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  host.innerHTML = html;
+}
+
+function renderR2RML(){
+  const data = getCurrentSheet();
+  const colsHost = document.getElementById("r2rml-cols-host");
+  const ontoHost = document.getElementById("r2rml-onto-host");
+  colsHost.innerHTML = "";
+  ontoHost.innerHTML = "";
+  data.r2rml.forEach((m,i)=>{
+    const c = document.createElement("div");
+    c.className = "r2rml-col";
+    c.dataset.idx = i;
+    c.innerHTML = `<span class="col-letter">${m.col}</span>
+      <span class="col-name">${m.name}</span>
+      <span class="col-arrow">→</span>`;
+    colsHost.appendChild(c);
+
+    const o = document.createElement("div");
+    o.className = "r2rml-onto";
+    o.dataset.idx = i;
+    o.innerHTML = `<span class="onto-prefix">${m.onto}</span>
+      ${m.tag ? `<span class="onto-tag">${m.tag}</span>` : ''}`;
+    ontoHost.appendChild(o);
+  });
+  // staggered light-up
+  data.r2rml.forEach((m,i)=>{
+    setTimeout(()=>{
+      colsHost.children[i].classList.add("mapped");
+      ontoHost.children[i].classList.add("lit");
+      drawR2RMLLine(i, data.r2rml.length);
+    }, 220 + i*180);
+  });
+}
+
+function drawR2RMLLine(i, total){
+  const svg = document.getElementById("r2rml-svg");
+  // viewBox is 60 wide, 600 tall — but each line drawn proportionally
+  const yStep = 600 / total;
+  const y = yStep * i + yStep/2;
+  const NS = "http://www.w3.org/2000/svg";
+  const ln = document.createElementNS(NS,"path");
+  // bezier S-curve
+  ln.setAttribute("d", `M 0 ${y} C 30 ${y}, 30 ${y}, 60 ${y}`);
+  ln.setAttribute("stroke", "#c2410c");
+  ln.setAttribute("stroke-width", "1.4");
+  ln.setAttribute("fill", "none");
+  ln.setAttribute("stroke-dasharray", "200");
+  ln.setAttribute("stroke-dashoffset", "200");
+  svg.appendChild(ln);
+  setTimeout(()=>{
+    ln.style.transition = "stroke-dashoffset .5s ease-out";
+    ln.setAttribute("stroke-dashoffset","0");
+  }, 30);
+}
+
+function renderAlign(){
+  const data = getCurrentSheet().align;
+  const aHost = document.getElementById("align-attrs-host");
+  const cHost = document.getElementById("align-concepts-host");
+  const rHost = document.getElementById("align-rules-host");
+  aHost.innerHTML = ""; cHost.innerHTML = ""; rHost.innerHTML = "";
+
+  data.attrs.forEach(d=>{
+    const el = document.createElement("div");
+    el.className = "align-card t-attr";
+    el.innerHTML = `<div class="ac-k">${d.k}</div><div class="ac-v">${d.v}</div>`;
+    aHost.appendChild(el);
+  });
+  data.concepts.forEach(d=>{
+    const el = document.createElement("div");
+    el.className = "align-card t-concept";
+    el.innerHTML = `<div class="ac-k">${d.k}</div><div class="ac-v">${d.v}</div>`;
+    cHost.appendChild(el);
+  });
+  data.rules.forEach(d=>{
+    const el = document.createElement("div");
+    el.className = "align-card t-rule";
+    el.innerHTML = `<div class="ac-k">${d.k}</div><div class="ac-v">${d.v}</div>`;
+    rHost.appendChild(el);
+  });
+
+  // staggered link-light animation
+  data.links.forEach((tri,i)=>{
+    setTimeout(()=>{
+      aHost.children[tri[0]].classList.add("lit");
+      cHost.children[tri[1]].classList.add("lit");
+      rHost.children[tri[2]].classList.add("lit");
+    }, 250 + i*450);
+  });
+}
+
+function startInstanceAttach(){
+  const data = getCurrentSheet();
+  const stream = document.getElementById("instance-stream");
+  const counter = document.getElementById("attach-counter");
+  const svg = document.getElementById("attach-graph");
+  stream.innerHTML = "";
+  svg.innerHTML = "";
+
+  // populate stream
+  data.instances.forEach(inst=>{
+    const row = document.createElement("div");
+    row.className = "inst-row";
+    row.innerHTML = `<span class="inst-id">${inst.id}</span>
+      <span class="inst-arrow">→</span>
+      <span class="inst-class">${inst.cls}</span>
+      <span class="inst-status" style="opacity:0">挂载</span>`;
+    stream.appendChild(row);
+  });
+
+  // pre-draw graph nodes (one per unique class)
+  const NS = "http://www.w3.org/2000/svg";
+  const classes = [...new Set(data.instances.map(i=>i.cls))];
+  const W = 500, H = 400;
+  const cx = W/2, cy = H/2;
+  const R = 130;
+  const nodePos = {};
+  classes.forEach((c,i)=>{
+    const a = (i/classes.length)*Math.PI*2 - Math.PI/2;
+    nodePos[c] = {x: cx + Math.cos(a)*R, y: cy + Math.sin(a)*R};
+    // edges from center
+    const ln = document.createElementNS(NS,"line");
+    ln.setAttribute("x1", cx); ln.setAttribute("y1", cy);
+    ln.setAttribute("x2", nodePos[c].x); ln.setAttribute("y2", nodePos[c].y);
+    ln.setAttribute("stroke", "#1a1612"); ln.setAttribute("stroke-width","0.6");
+    ln.setAttribute("opacity","0.3");
+    svg.appendChild(ln);
+  });
+  // central hub
+  const hub = document.createElementNS(NS,"circle");
+  hub.setAttribute("cx",cx); hub.setAttribute("cy",cy); hub.setAttribute("r",18);
+  hub.setAttribute("fill","#1a1612"); svg.appendChild(hub);
+  const hubLbl = document.createElementNS(NS,"text");
+  hubLbl.setAttribute("x",cx); hubLbl.setAttribute("y",cy+4);
+  hubLbl.setAttribute("text-anchor","middle");
+  hubLbl.setAttribute("fill","#f3eee4");
+  hubLbl.setAttribute("font-family","Space Grotesk, sans-serif");
+  hubLbl.setAttribute("font-size","11");
+  hubLbl.setAttribute("font-style","italic");
+  hubLbl.textContent = "本体核心";
+  svg.appendChild(hubLbl);
+
+  // class nodes
+  classes.forEach(c=>{
+    const p = nodePos[c];
+    const cir = document.createElementNS(NS,"circle");
+    cir.setAttribute("cx",p.x); cir.setAttribute("cy",p.y); cir.setAttribute("r",13);
+    cir.setAttribute("fill","#ebe3d3"); cir.setAttribute("stroke","#1a1612");
+    cir.setAttribute("stroke-width","1.2");
+    cir.dataset.cls = c;
+    svg.appendChild(cir);
+    const tx = document.createElementNS(NS,"text");
+    tx.setAttribute("x",p.x); tx.setAttribute("y",p.y+25);
+    tx.setAttribute("text-anchor","middle");
+    tx.setAttribute("font-family","'Noto Sans SC', sans-serif");
+    tx.setAttribute("font-size","9.5");
+    tx.setAttribute("fill","#4a413a");
+    tx.textContent = c;
+    svg.appendChild(tx);
+    // counter near node
+    const ct = document.createElementNS(NS,"text");
+    ct.setAttribute("x",p.x); ct.setAttribute("y",p.y+3);
+    ct.setAttribute("text-anchor","middle");
+    ct.setAttribute("font-family","'JetBrains Mono', monospace");
+    ct.setAttribute("font-size","9");
+    ct.setAttribute("fill","#1a1612");
+    ct.setAttribute("font-weight","600");
+    ct.dataset.cls = c;
+    ct.textContent = "0";
+    svg.appendChild(ct);
+  });
+
+  // animate instances flowing in
+  let attached = 0;
+  const total = data.instances.length;
+  counter.textContent = `0 / ${total}`;
+  data.instances.forEach((inst,i)=>{
+    setTimeout(()=>{
+      const row = stream.children[i];
+      row.classList.add("attached");
+      row.querySelector(".inst-status").style.opacity = "1";
+      // particle from row to graph node
+      spawnAttachBurst(row, nodePos[inst.cls]);
+      // bump counter on node
+      const ct = svg.querySelector(`text[data-cls="${inst.cls}"][font-weight="600"]`);
+      if(ct){
+        const n = parseInt(ct.textContent)+1;
+        ct.textContent = n;
+        // pulse the node circle
+        const cir = svg.querySelector(`circle[data-cls="${inst.cls}"]`);
+        if(cir){
+          cir.setAttribute("fill","#fff7ee");
+          setTimeout(()=>cir.setAttribute("fill","#ebe3d3"), 260);
+        }
+      }
+      attached++;
+      counter.textContent = `${attached} / ${total}`;
+      // scroll the stream
+      row.scrollIntoView({behavior:"smooth", block:"center"});
+    }, 200 + i*220);
+  });
+}
+
+function spawnAttachBurst(fromEl, toGraphPt){
+  const r = fromEl.getBoundingClientRect();
+  const svg = document.getElementById("attach-graph");
+  const svgRect = svg.getBoundingClientRect();
+  // SVG coords -> screen
+  const vw = 500, vh = 400;
+  const scaleX = svgRect.width / vw;
+  const scaleY = svgRect.height / vh;
+  const tx = svgRect.left + toGraphPt.x * scaleX;
+  const ty = svgRect.top + toGraphPt.y * scaleY;
+
+  const burst = document.createElement("div");
+  burst.className = "attach-burst";
+  burst.style.left = (r.right - 30) + "px";
+  burst.style.top = (r.top + r.height/2 - 2) + "px";
+  document.body.appendChild(burst);
+  requestAnimationFrame(()=>{
+    burst.style.left = tx + "px";
+    burst.style.top = ty + "px";
+  });
+  setTimeout(()=>burst.style.opacity="0", 950);
+  setTimeout(()=>burst.remove(), 1300);
+}
+
+// =====================================================================
+// 模板渲染 / 切换 / 上传
+// =====================================================================
+
+// 渲染模板卡片(固定 4 个槽位 = 3 内置 + 1 上传)
+function renderTplCards(){
+  document.querySelectorAll(".tpl-card[data-tpl]").forEach(c=>{
+    c.classList.toggle("active", c.dataset.tpl === currentTpl);
+  });
+}
+
+// 渲染 sheet tabs (按当前模板的 sheets)
+function renderSheetTabs(){
+  const host = document.getElementById("sheet-tabs-host");
+  const tpl = TEMPLATES[currentTpl];
+  if(!host || !tpl || !tpl.sheets) return;
+  host.innerHTML = "";
+  const keys = Object.keys(tpl.sheets);
+  keys.forEach(k=>{
+    const s = tpl.sheets[k];
+    const tab = document.createElement("div");
+    tab.className = "sheet-tab" + (k===currentSheet ? " active" : "");
+    tab.dataset.sheet = k;
+    tab.innerHTML = `<span class="st-icon">${s.icon||"📄"}</span>${s.label}`;
+    tab.onclick = ()=>{
+      currentSheet = k;
+      renderSheetTabs();
+      renderPreviewTable(k);
+    };
+    host.appendChild(tab);
+  });
+}
+
+// 渲染顶部文件卡片
+function renderFileCard(){
+  const tpl = TEMPLATES[currentTpl];
+  if(!tpl) return;
+  document.getElementById("file-name-el").textContent = tpl.file;
+  document.getElementById("file-meta-el").textContent = tpl.fileMeta;
+  const icon = document.getElementById("file-icon-el");
+  icon.textContent = tpl.icon;
+  icon.style.background = tpl.iconBg;
+  const status = document.getElementById("parse-status");
+  status.textContent = tpl.builtin ? "✓ 已识别" : "✓ 解析完成";
+  status.classList.remove("parsing","error");
+}
+
+// 渲染本体摘要
+function renderOntoSummary(){
+  const tpl = TEMPLATES[currentTpl];
+  if(!tpl) return;
+  const s = tpl.summary;
+  document.getElementById("onto-summary-body").innerHTML = `
+    <span style="color:var(--accent)">实体类_Classes</span> <span style="color:var(--ink-mute)">×</span> ${s.classes} ·
+    <span style="color:var(--accent-2)">实例_Individuals</span> <span style="color:var(--ink-mute)">×</span> ${s.instances} ·
+    <span style="color:var(--accent-3)">关系_Relations</span> <span style="color:var(--ink-mute)">×</span> ${s.relations} ·
+    <span style="color:var(--accent-4)">数据属性</span> <span style="color:var(--ink-mute)">×</span> ${s.dataProps} ·
+    <span style="color:var(--accent-5)">业务规则</span> <span style="color:var(--ink-mute)">×</span> ${s.rules} ·
+    <span style="color:var(--info)">智能体配置</span> <span style="color:var(--ink-mute)">×</span> ${s.agents}
+  `;
+}
+
+// 切换模板
+function switchTemplate(tplKey){
+  if(!TEMPLATES[tplKey]) return;
+  currentTpl = tplKey;
+  currentSheet = TEMPLATES[tplKey].defaultSheet;
+  renderTplCards();
+  renderSheetTabs();
+  renderFileCard();
+  renderOntoSummary();
+  renderPreviewTable(currentSheet);
+  // 同步刷新底部解说语
+  const q = document.getElementById("wiz-quote");
+  if(q) q.innerHTML = getStepQuote(wizStep);
+}
+
+// =====================================================================
+// Excel 文件解析 (识别 OAG 五段式结构)
+// =====================================================================
+
+// 把任意 Excel 文件解析成 OAG 模板对象 (即 TEMPLATES.custom 的形态)
+function parseExcelToTemplate(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      try {
+        const wb = XLSX.read(e.target.result, {type:"array"});
+        const sheets = {};
+        let totalClasses = 0, totalInstances = 0, totalRelations = 0,
+            totalDataProps = 0, totalRules = 0, totalAgents = 0;
+        const ICONS_FALLBACK = ["📄","📊","📋","🗂️","📒","📕","📗","📘"];
+
+        wb.SheetNames.forEach((sn, idx)=>{
+          const ws = wb.Sheets[sn];
+          // 获取 2D 数组
+          const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
+          // 识别 OAG 五段式分节
+          const sections = parseOAGSections(aoa);
+          // 提取关键统计
+          totalClasses   += (sections.classes?.rows.length || 0);
+          totalInstances += (sections.individuals?.rows.length || 0);
+          totalRelations += (sections.relations?.rows.length || 0);
+          totalDataProps += (sections.dataProperties?.rows.length || 0);
+          totalRules     += (sections.rules?.rows.length || 0);
+          totalAgents    += (sections.agents?.rows.length || 0);
+
+          // 用实例段构建预览(取前 5 行)
+          const indRows = sections.individuals?.rows || [];
+          const indHeaders = sections.individuals?.headers || ["实体ID","标签","所属类"];
+          const previewHeaders = indHeaders.slice(0, 7);
+          const previewRows = indRows.slice(0, 5).map(r=>{
+            const out = previewHeaders.map((_,i)=>{
+              const v = r[i]; return (v==null||v==="") ? "-" : String(v);
+            });
+            return out;
+          });
+
+          // 推断 R2RML 列映射
+          const r2rml = previewHeaders.map((h,i)=>{
+            const col = String.fromCharCode(65+i);
+            let onto, tag;
+            // OAG 模板里的属性 N_名称/属性 N_值 列对 — 折叠为单一属性
+            const mAttrName = h.match(/^属性\s*(\d+)\s*[_\s]*名称$/);
+            const mAttrVal  = h.match(/^属性\s*(\d+)\s*[_\s]*值$/);
+            if(mAttrName){
+              onto = `ex:dynamicProp_${mAttrName[1]} (rdf:Property)`;
+              tag = "动态属性键";
+            } else if(mAttrVal){
+              onto = `ex:dynamicProp_${mAttrVal[1]}_value (xsd:string)`;
+              tag = "动态属性值";
+            } else if(i===0 || /^id$|编号|代码|主键/i.test(h))   { onto = "rr:subjectMap → ex:Instance";    tag = "主键"; }
+            else if(i===1 || /^label$|^name$|^标签$|^名称$|^名字$/i.test(h)) { onto = "rdfs:label";                     tag = "标签"; }
+            else if(/所属类|类别|类型|class|type$/i.test(h))      { onto = "rdf:type → 本体 Class";          tag = "类型"; }
+            else if(/描述|备注|说明|desc/i.test(h))               { onto = "rdfs:comment";                   tag = "注释"; }
+            else                                                   { onto = `ex:${camelCase(h)} (xsd:string)`;            tag = "属性"; }
+            return {col, name:h, onto, tag};
+          });
+
+          // 推断概念/规则 — 从规则段提取
+          const ruleRows = sections.rules?.rows || [];
+          const conceptRows = sections.classes?.rows || [];
+          const dataPropRows = sections.dataProperties?.rows || [];
+
+          // 构造语义对齐三列(取前 3 个)
+          const attrs = dataPropRows.slice(0, 3).map(r=>({
+            k:"DATA PROPERTY",
+            v: `<code>ex:${r[2]||camelCase(r[1]||r[0]||"")}</code> · ${r[1]||r[0]||""}`
+          }));
+          while(attrs.length < 3) attrs.push({k:"DATA PROPERTY", v:"<code>ex:dataProp</code> · 数据属性"});
+
+          const concepts = conceptRows.slice(0, 3).map(r=>({
+            k:"CONCEPT",
+            v: `<code>ex:${r[2]||camelCase(r[1]||r[0]||"")}</code> · ${r[1]||r[0]||""}`
+          }));
+          while(concepts.length < 3) concepts.push({k:"CONCEPT", v:"<code>ex:Concept</code> · 本体概念"});
+
+          const rules = ruleRows.slice(0, 3).map(r=>({
+            k:`RULE · ${r[4]||"中"}`,
+            v: `<code>${r[0]||"rule"}</code> ${r[1]||""}`
+          }));
+          while(rules.length < 3) rules.push({k:"RULE · 中", v:"<code>rule</code> 业务规则"});
+
+          // 构造实例列表(取前 12 个)
+          const instances = indRows.slice(0, 12).map(r=>({
+            id: r[0]||"",
+            cls: r[2]||"未分类"
+          })).filter(i=>i.id);
+
+          sheets[`s${idx}`] = {
+            label: sn,
+            icon: ICONS_FALLBACK[idx % ICONS_FALLBACK.length],
+            headers: previewHeaders,
+            rows: previewRows,
+            r2rml,
+            align: { attrs, concepts, rules, links:[[0,0,0],[1,1,0],[2,2,2]] },
+            instances
+          };
+        });
+
+        const firstKey = Object.keys(sheets)[0];
+        const tpl = {
+          name: file.name.replace(/\.[^.]+$/, ""),
+          file: file.name,
+          icon: "XLS",
+          iconBg: "linear-gradient(135deg,#7a6e63,#4a413a)",
+          summary: {
+            classes:totalClasses, instances:totalInstances,
+            relations:totalRelations, dataProps:totalDataProps,
+            rules:totalRules, agents:totalAgents
+          },
+          fileMeta: `${wb.SheetNames.length} 个工作表 · ${totalInstances} 行实例 · ${totalRelations} 条关系 · ${totalRules} 条业务规则`,
+          sheets,
+          defaultSheet: firstKey,
+          builtin: false,
+        };
+        resolve(tpl);
+      } catch(err){
+        reject(err);
+      }
+    };
+    reader.onerror = ()=>reject(new Error("文件读取失败"));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+// 把字符串转为驼峰 camelCase 用作 ex: 属性名
+// 常见中文术语用预定义词典翻译, 其他中文用稳定的短 hash
+const ZH2EN = {
+  "告警级别":"severity","告警":"alert","响应":"response","时长":"duration",
+  "离线":"offline","设备":"device","工单":"workOrder","申请":"application",
+  "金额":"amount","期限":"tenor","客户":"customer","评级":"rating",
+  "条款":"clause","编号":"code","主题":"topic","版本":"version",
+  "名称":"name","描述":"description","属性":"prop","区域":"region",
+  "行业":"industry","触发":"trigger","当前":"current","值":"value",
+  "状态":"status","所属":"belong","包裹":"parcel","枢纽":"hub",
+  "航线":"corridor","关区":"customs","清关":"clearance","风险":"risk",
+  "评分":"score","剩余":"remaining","寿命":"lifecycle","健康":"health",
+  "工位":"resource","延误":"delay","分钟":"minutes","优先级":"priority",
+};
+function camelCase(s){
+  if(!s) return "prop";
+  let t = String(s);
+  Object.keys(ZH2EN).sort((a,b)=>b.length-a.length).forEach(k=>{
+    t = t.split(k).join("_"+ZH2EN[k]+"_");
+  });
+  t = t.replace(/[\u4e00-\u9fa5]/g, "");
+  const parts = t.split(/[\s_\-\/\.\\\(\)\[\]]+/).filter(x=>x);
+  if(parts.length === 0){
+    let h = 0;
+    for(let i=0;i<s.length;i++) h = ((h<<5) - h + s.charCodeAt(i)) | 0;
+    return "p" + Math.abs(h).toString(36).slice(0,5);
+  }
+  return parts.map((w,i)=>{
+    const lw = w.toLowerCase().replace(/[^\w]/g,"");
+    return i===0 ? lw : lw[0].toUpperCase()+lw.slice(1);
+  }).join("");
+}
+
+// 解析 OAG 五段式分节 (识别 ## 实体类_Classes 等节标题)
+function parseOAGSections(aoa){
+  const sections = {};
+  // 节标题关键字 → key
+  const SECTION_KEYS = [
+    {key:"classes",        match:/实体类|class(es)?$/i},
+    {key:"individuals",    match:/实例|individual/i},
+    {key:"relations",      match:/关系|relation/i},
+    {key:"dataProperties", match:/数据属性|dataprop/i},
+    {key:"rules",          match:/业务规则|rule/i},
+    {key:"agents",         match:/智能体|agent/i},
+    {key:"scenarios",      match:/场景|scenario/i},
+  ];
+
+  let cur = null;
+  let curHeaders = null;
+  for(let i=0;i<aoa.length;i++){
+    const row = aoa[i];
+    const first = String(row[0]||"").trim();
+
+    // 跳过完全空行 / 注释行
+    if(!first && row.every(c=>!String(c||"").trim())) continue;
+    if(first.startsWith("#") && !first.startsWith("##")) continue;
+
+    // 节标题: 以 ## 开头, 或与已知关键字匹配且后续是表头
+    if(first.startsWith("##")){
+      const title = first.replace(/^#+\s*/,"");
+      const found = SECTION_KEYS.find(k=>k.match.test(title));
+      if(found){
+        cur = found.key;
+        sections[cur] = {title, headers:null, rows:[]};
+        curHeaders = null;
+        continue;
+      }
+      cur = null; curHeaders = null;
+      continue;
+    }
+
+    // 节内: 第一个非空行作为表头, 之后是数据
+    if(cur){
+      if(!curHeaders){
+        curHeaders = row.map(c=>String(c||"").trim());
+        sections[cur].headers = curHeaders;
+      } else if(first){
+        sections[cur].rows.push(row);
+      }
+    }
+  }
+  return sections;
+}
+
+// 处理上传
+function handleFileUpload(file){
+  const overlay = document.getElementById("parse-overlay");
+  const ptext = document.getElementById("parse-text");
+  overlay.classList.add("on");
+  ptext.innerHTML = `读取 <em>${file.name}</em>…`;
+
+  // 三阶段进度文案
+  setTimeout(()=>{ ptext.innerHTML = "解析 Excel · 识别 <em>OAG 五段式</em>结构…"; }, 400);
+  setTimeout(()=>{ ptext.innerHTML = "构建本体类 / 实例 / 规则…"; }, 800);
+
+  parseExcelToTemplate(file).then(tpl=>{
+    setTimeout(()=>{ ptext.innerHTML = "完成 · 自动推断 R2RML 映射…"; }, 200);
+    setTimeout(()=>{
+      // 安装到 'custom' 模板槽
+      TEMPLATES.custom = tpl;
+      // upload card 切换为 custom 状态
+      const uploadCard = document.getElementById("upload-card");
+      uploadCard.dataset.tpl = "custom";
+      uploadCard.classList.remove("upload");
+      uploadCard.querySelector(".tpl-name").textContent = tpl.name.length>14 ? tpl.name.slice(0,14)+"…" : tpl.name;
+      uploadCard.querySelector(".tpl-meta").textContent = tpl.fileMeta;
+      const tag = uploadCard.querySelector(".tpl-tag");
+      tag.textContent = "已上传";
+      tag.style.background = "var(--ok)";
+      tag.style.color = "var(--paper)";
+      tag.style.borderColor = "var(--ok)";
+      const tplIcon = uploadCard.querySelector(".tpl-icon");
+      tplIcon.textContent = "✓";
+      tplIcon.style.background = "linear-gradient(135deg,#15803d,#166534)";
+
+      switchTemplate("custom");
+      overlay.classList.remove("on");
+    }, 700);
+  }).catch(err=>{
+    ptext.innerHTML = `<span style="color:var(--warn)">解析失败 · ${err.message||"未知错误"}</span>`;
+    setTimeout(()=>overlay.classList.remove("on"), 1500);
+  });
+}
+
+// =====================================================================
+// 向导事件绑定
+// =====================================================================
+document.getElementById("open-import").onclick = openWizard;
+document.getElementById("wiz-close").onclick = closeWizard;
+document.getElementById("wiz-overlay").onclick = (e)=>{
+  if(e.target.id === "wiz-overlay") closeWizard();
+};
+document.getElementById("wiz-back").onclick = ()=>{
+  if(wizStep>0) setWizStep(wizStep-1);
+};
+document.getElementById("wiz-next").onclick = ()=>{
+  if(wizStep<3){
+    setWizStep(wizStep+1);
+  } else {
+    closeWizard();
+    const ns = document.getElementById("L2-nodes");
+    const sheet = getCurrentSheet();
+    if(ns && sheet){
+      const orig = ns.textContent;
+      ns.style.color = "var(--ok)";
+      ns.textContent = "+" + sheet.instances.length;
+      setTimeout(()=>{
+        ns.style.color = "";
+        ns.textContent = orig;
+      }, 2200);
+    }
+    const t = document.getElementById("toast");
+    if(sheet){
+      document.getElementById("toast-text").textContent =
+        `已从「${sheet.label}」挂载 ${sheet.instances.length} 个实例 → 进入 4D 图谱`;
+      t.classList.add("on");
+      setTimeout(()=>t.classList.remove("on"), 4000);
+    }
+  }
+};
+
+// 模板卡片点击
+document.querySelectorAll(".tpl-card[data-tpl]").forEach(card=>{
+  card.onclick = (e)=>{
+    const tplKey = card.dataset.tpl;
+    if(tplKey === "upload"){
+      // 触发上传(还未有自定义模板)
+      document.getElementById("file-input").click();
+      return;
+    }
+    if(tplKey === "custom" && !TEMPLATES.custom){
+      // 还未上传, 触发上传
+      document.getElementById("file-input").click();
+      return;
+    }
+    switchTemplate(tplKey);
+  };
+});
+
+// 文件 input 变化
+document.getElementById("file-input").addEventListener("change", (e)=>{
+  const f = e.target.files[0];
+  if(f) handleFileUpload(f);
+  e.target.value = ""; // 允许重复选同一文件
+});
+
+// 拖放上传支持
+const uploadCard = document.getElementById("upload-card");
+["dragenter","dragover"].forEach(ev=>{
+  uploadCard.addEventListener(ev, e=>{
+    e.preventDefault(); e.stopPropagation();
+    uploadCard.style.background = "#fff7ee";
+    uploadCard.style.borderColor = "var(--accent)";
+  });
+});
+["dragleave","drop"].forEach(ev=>{
+  uploadCard.addEventListener(ev, e=>{
+    e.preventDefault(); e.stopPropagation();
+    uploadCard.style.background = "";
+    uploadCard.style.borderColor = "";
+  });
+});
+uploadCard.addEventListener("drop", e=>{
+  const f = e.dataTransfer.files[0];
+  if(f) handleFileUpload(f);
+});
+
+
+// ===========================================================
+// INIT
+// ===========================================================
+buildSidebarIndustries();
+sceneGroup = BUILDERS.power();
+scene.add(sceneGroup);
+agentRig = buildAgentRig();
+scene.add(agentRig);
+setAgentRigPosition("power");
+updatePanels("power");
+tick();
+setTimeout(()=>startCycle(), 600);
+
+</script>
+</body>
+</html>
